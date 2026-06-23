@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDH Sprint 1 — PMO Dashboard · W9</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+
+/* ══════════════════════════════════════════════════════
+   MASTER NAVIGATION — IDH branded style
+══════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;overflow-x:hidden}
+body{font-family:'Sora',sans-serif;background:#F5F2EB;color:#14151A;-webkit-font-smoothing:antialiased}
+
+.master-nav{
+  background:#14151A;
+  border-bottom:3px solid #C8102E;
+  height:52px;
+  display:flex;align-items:center;
+  padding:0 28px;
+  position:sticky;top:0;z-index:1000;
+  gap:0;
+  background-image:
+    radial-gradient(ellipse at top right, rgba(255,255,255,0.07), transparent 55%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='92' viewBox='0 0 80 92'><g fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'><polygon points='40,2 76,22 76,68 40,90 4,68 4,22'/></g></svg>");
+}
+.master-nav-logo{display:flex;align-items:center;gap:0;margin-right:24px}
+.master-nav-idh{
+  background:#FFFFFF;border-radius:6px;
+  width:44px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font:800 16px/1 'Sora',sans-serif;color:#C8102E;
+  letter-spacing:-0.5px;flex-shrink:0;
+  box-shadow:0 1px 4px rgba(0,0,0,0.18);
+}
+.master-nav-vdivider{width:1px;height:30px;background:rgba(255,255,255,0.2);margin:0 14px}
+.master-nav-dept{display:flex;flex-direction:column;gap:2px}
+.master-nav-dept-name{font:600 11px/1 'Sora',sans-serif;color:#fff;letter-spacing:0.5px;text-transform:uppercase}
+.master-nav-dept-parent{font:400 9px/1 'JetBrains Mono',monospace;color:rgba(255,255,255,0.4);letter-spacing:1.2px;text-transform:uppercase}
+.master-nav-pages{display:flex;gap:4px;margin-left:4px}
+.master-nav-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 16px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.1);
+  background:transparent;
+  color:rgba(255,255,255,.5);
+  font:600 11px/1 'Sora',sans-serif;
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.master-nav-btn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22)}
+.master-nav-btn.active{background:#C8102E;color:#fff;border-color:#C8102E;box-shadow:0 2px 12px rgba(200,16,46,.4)}
+.master-nav-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.master-nav-badge{font:600 10px/1 'JetBrains Mono',monospace;color:rgba(255,255,255,.5);letter-spacing:.08em;text-transform:uppercase}
+.master-nav-live{
+  display:flex;align-items:center;gap:6px;
+  font:600 10px/1 'JetBrains Mono',monospace;color:#fff;
+  padding:5px 12px;border:1px solid rgba(16,185,129,0.25);border-radius:20px;
+}
+.master-nav-live::before{content:'';width:8px;height:8px;border-radius:50%;background:#10B981;animation:masterBlink 2s infinite}
+
+/* ── PAGE CONTAINERS ── */
+.page{display:none}
+.page.active{display:block}
+
+@keyframes masterBlink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Prevent any inner topbar from sticking independently ── */
+.page [data-page="proj"] .topbar,
+[data-page="proj"] .topbar {
+  position: relative !important;
+  display: none !important;
+}
+/* ── Activity page: hide any residual topbar elements ── */
+#page-act .topbar,
+#page-act .topbar-logo,
+#page-act .topbar-title,
+#page-act .topbar-badge,
+#page-act .topbar-week,
+#page-act .topbar-right,
+#page-act .topbar-divider {
+  display: none !important;
+}
+/* ── Ensure page containers fill correctly ── */
+.page { width: 100%; }
+
+
+
+/* ══════════════════════════════════════════════════════
+   PAGE 1 — PROJECT DASHBOARD (IDH branded)
+   All rules scoped under [data-page="proj"]
+══════════════════════════════════════════════════════ */
+:root{
+  /* IDH Brand Colours */
+  --red:#C8102E;
+  --red-light:rgba(200,16,46,0.08);
+  --red-mid:rgba(200,16,46,0.15);
+  --charcoal:#14151A;
+  --ink:#2A2C33;
+  --muted:#6B6F78;
+  --line:#E3E1DC;
+  --cream:#FAF7F0;
+  --white:#FFFFFF;
+  /* Status */
+  --green:#2E7D32;
+  --green-bg:#E8F5E9;
+  --green-border:#A5D6A7;
+  --amber:#B45309;
+  --amber-bg:#FEF3C7;
+  --amber-border:#FCD34D;
+  --grey:#64748B;
+  --grey-bg:#F1F5F9;
+  /* Layout */
+  --page:#F5F2EB;
+  --card:#FFFFFF;
+  --border:#E3E1DC;
+  --shadow:0 1px 3px rgba(20,21,26,.05),0 4px 16px rgba(20,21,26,.06);
+  --shadow-lg:0 4px 12px rgba(20,21,26,.08),0 12px 40px rgba(20,21,26,.1);
+  --font:'Sora',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  /* Navy kept for S-curve chart data */
+  --navy:#1F4E78;
+  --blue:#2E75B6;
+  --teal:#285350;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--page);color:var(--charcoal);min-height:100vh;-webkit-font-smoothing:antialiased}
+[data-page="proj"] .wrap{max-width:1400px;margin:0 auto;padding:0 0 56px}
+/* ── TOP NAV BAR ── */
+.topbar{
+  background:var(--charcoal);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  height:52px;
+  position:sticky;top:0;z-index:100;
+  border-bottom:3px solid var(--red);
+background-image:
+    radial-gradient(ellipse at top right, rgba(255,255,255,0.07), transparent 55%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='92' viewBox='0 0 80 92'><g fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'><polygon points='40,2 76,22 76,68 40,90 4,68 4,22'/></g></svg>");
+}
+[data-page="proj"] .topbar-logo{display:flex;align-items:center;gap:0}
+[data-page="proj"] .topbar-idh-box{
+  background:#FFFFFF;
+  border-radius:6px;
+  width:44px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  font:800 16px/1 var(--font);
+  color:var(--red);
+  letter-spacing:-0.5px;
+  flex-shrink:0;
+  box-shadow:0 1px 4px rgba(0,0,0,0.18);
+}
+[data-page="proj"] .topbar-divider{width:1px;height:30px;background:rgba(255,255,255,0.2);margin:0 14px}
+[data-page="proj"] .topbar-dept{display:flex;flex-direction:column;gap:2px}
+[data-page="proj"] .topbar-dept-name{font:600 11px/1 var(--font);color:#fff;letter-spacing:0.5px;text-transform:uppercase}
+[data-page="proj"] .topbar-dept-parent{font:400 9px/1 var(--mono);color:rgba(255,255,255,0.4);letter-spacing:1.2px;text-transform:uppercase}
+[data-page="proj"] .topbar-right{display:flex;align-items:center;gap:16px}
+[data-page="proj"] .topbar-badge{font:600 10px/1 var(--mono);color:rgba(255,255,255,0.5);letter-spacing:0.08em;text-transform:uppercase}
+[data-page="proj"] .topbar-live{display:flex;align-items:center;gap:6px;font:600 10px/1 var(--mono);color:#FFFFFF;padding:5px 12px;border:1px solid rgba(16,185,129,0.25);border-radius:20px}
+[data-page="proj"] .topbar-live::before{content:'';width:10px;height:10px;border-radius:50%;background:#10B981;animation:blink 2s infinite}
+/* ── HEADER ── */
+.header{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:20px 28px 18px;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:20px;
+  animation:fadeDown .4s ease both;
+}
+[data-page="proj"] .header-eyebrow{font:600 10px/1 var(--mono);color:var(--grey);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+[data-page="proj"] .header-eyebrow::before{content:'';display:block;width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px var(--red-mid)}
+[data-page="proj"] h1{font-size:clamp(18px,1.8vw,26px);font-weight:800;color:var(--red);line-height:1.2}
+[data-page="proj"] h1 em{font-style:normal;color:var(--charcoal)}
+[data-page="proj"] .sub{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+[data-page="proj"] .header-right{text-align:right;flex-shrink:0}
+[data-page="proj"] .rdate{font:500 11px/1 var(--mono);color:var(--muted)}
+[data-page="proj"] .status-pill{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);font:600 11px/1 var(--mono);padding:5px 12px;border-radius:20px;margin-top:7px}
+[data-page="proj"] .status-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#10B981;animation:blink 2s infinite}
+/* ── CONTENT PADDING ── */
+.content{padding:20px 28px 0}
+/* ── TIMELINE ── */
+.timeline-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow);animation:fadeUp .4s .05s ease both;position:relative;overflow:hidden}
+[data-page="proj"] .timeline-wrap::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--red)}
+[data-page="proj"] .tl-label{font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between}
+[data-page="proj"] .tl-label span{color:var(--red);font-weight:700}
+[data-page="proj"] .tl-bar{display:grid;grid-template-columns:repeat(17,1fr);gap:3px}
+[data-page="proj"] .tl-w{height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font:600 10px/1 var(--mono);transition:transform .15s;cursor:default}
+[data-page="proj"] .tl-w:hover{transform:scaleY(1.12)}
+[data-page="proj"] .tl-w.past{background:var(--charcoal);color:#fff}
+[data-page="proj"] .tl-w.now{background:linear-gradient(135deg,var(--red),#E02040);color:#fff;box-shadow:0 3px 12px rgba(200,16,46,.35);position:relative}
+[data-page="proj"] .tl-w.now::after{content:'▼';position:absolute;bottom:-13px;font-size:8px;color:var(--red)}
+[data-page="proj"] .tl-w.future{background:var(--cream);color:var(--muted);border:1px solid var(--border)}
+[data-page="proj"] .tl-meta{display:flex;justify-content:space-between;margin-top:16px;font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;animation:fadeUp .4s .1s ease both}
+@media(max-width:1050px){[data-page="proj"] .kpi-row{grid-template-columns:repeat(3,1fr)}}
+[data-page="proj"] .kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 15px 13px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s}
+[data-page="proj"] .kpi:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+[data-page="proj"] .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+[data-page="proj"] .kpi.k1::after, [data-page="proj"] .kpi.k1 .kpi-val{background-color:var(--charcoal);color:var(--charcoal)}
+[data-page="proj"] .kpi.k1::after{background:var(--charcoal);color:unset}
+[data-page="proj"] .kpi.k2::after{background:var(--green)}
+[data-page="proj"] .kpi.k2 .kpi-val{color:var(--green)}
+[data-page="proj"] .kpi.k3::after{background:var(--amber)}
+[data-page="proj"] .kpi.k3 .kpi-val{color:var(--amber)}
+[data-page="proj"] .kpi.k4::after{background:var(--muted)}
+[data-page="proj"] .kpi.k4 .kpi-val{color:var(--muted)}
+[data-page="proj"] .kpi.k5::after{background:var(--red)}
+[data-page="proj"] .kpi.k5 .kpi-val{color:var(--red)}
+[data-page="proj"] .kpi.k6::after{background:var(--teal)}
+[data-page="proj"] .kpi.k6 .kpi-val{color:var(--teal)}
+/* fix k1 val color */
+.kpi.k1 .kpi-val{color:var(--charcoal) !important;background-color:transparent !important}
+[data-page="proj"] .kpi-ico{font-size:15px;margin-bottom:6px}
+[data-page="proj"] .kpi-val{font-weight:800;font-size:26px;line-height:1;margin-bottom:3px}
+[data-page="proj"] .kpi-lbl{font-size:10.5px;font-weight:600;color:var(--muted)}
+[data-page="proj"] .kpi-sub{font-size:9.5px;color:var(--muted);margin-top:4px}
+[data-page="proj"] .kpi-tag{position:absolute;bottom:10px;right:11px;font:700 9px/1 var(--mono)}
+[data-page="proj"] .tag-ahead{color:var(--green)}
+/* ── MAIN GRID ── */
+.main{display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:14px;animation:fadeUp .4s .15s ease both}
+@media(max-width:1050px){[data-page="proj"] .main{grid-template-columns:1fr}}
+[data-page="proj"] .panel{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+[data-page="proj"] .ph{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:var(--cream)}
+[data-page="proj"] .ph-title{font-size:12px;font-weight:700;color:var(--charcoal);display:flex;align-items:center;gap:7px}
+[data-page="proj"] .ph-title::before{content:'';display:block;width:3px;height:14px;background:var(--red);border-radius:2px;flex-shrink:0}
+[data-page="proj"] .ph-title small{font-weight:400;color:var(--muted);font-size:10.5px;margin-left:4px}
+[data-page="proj"] .badge{font:600 10px/1 var(--mono);padding:3px 9px;border-radius:20px;background:#EFF6FF;color:var(--blue);border:1px solid #BFDBFE;white-space:nowrap}
+[data-page="proj"] .badge-green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+[data-page="proj"] .badge-red{background:rgba(200,16,46,0.08);color:var(--red);border-color:rgba(200,16,46,0.25)}
+[data-page="proj"] .dtbl{width:100%;border-collapse:collapse}
+[data-page="proj"] .dtbl th{font:600 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:center;background:var(--cream);border-bottom:1px solid var(--border)}
+[data-page="proj"] .dtbl th:nth-child(1), [data-page="proj"] .dtbl th:nth-child(2){text-align:left}
+[data-page="proj"] .dtbl td{padding:9px 10px;font-size:11px;border-bottom:1px solid var(--border);vertical-align:middle}
+[data-page="proj"] .dtbl tr:last-child td{border-bottom:none}
+[data-page="proj"] .dtbl tbody tr{transition:background .12s}
+[data-page="proj"] .dtbl tbody tr:hover{background:var(--cream)}
+[data-page="proj"] .dn{width:22px;height:22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 var(--mono);color:#fff}
+[data-page="proj"] .dname{font-weight:600;color:var(--charcoal);font-size:11px}
+[data-page="proj"] .cnt-done{color:var(--green);font-weight:700;text-align:center}
+[data-page="proj"] .cnt-prog{color:var(--amber);font-weight:700;text-align:center}
+[data-page="proj"] .cnt-pend{color:var(--muted);text-align:center}
+[data-page="proj"] .ev-tag{font:500 10px/1 var(--mono);padding:2px 6px;border-radius:4px;display:inline-block}
+[data-page="proj"] .ev-on{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+[data-page="proj"] .ev-off{background:var(--grey-bg);color:var(--muted);border:1px solid var(--border)}
+[data-page="proj"] .prog-row{display:flex;align-items:center;gap:7px;min-width:110px}
+[data-page="proj"] .prog-bg{flex:1;height:5px;background:var(--cream);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+[data-page="proj"] .prog-bar{height:100%;border-radius:3px}
+[data-page="proj"] .prog-pct{font:500 10px/1 var(--mono);color:var(--muted);min-width:28px;text-align:right}
+[data-page="proj"] .tot td{background:var(--charcoal)!important;color:#fff!important;font-weight:700}
+[data-page="proj"] .tot .dname{color:#fff!important}
+[data-page="proj"] .tot .cnt-done, [data-page="proj"] .tot .cnt-prog, [data-page="proj"] .tot .cnt-pend{color:#fff!important}
+[data-page="proj"] .rc{display:flex;flex-direction:column;gap:12px}
+[data-page="proj"] .donut-body{padding:16px;display:flex;flex-direction:column;align-items:center}
+[data-page="proj"] .donut-container{position:relative;width:128px;height:128px}
+[data-page="proj"] .donut-svg{width:128px;height:128px}
+[data-page="proj"] .donut-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+[data-page="proj"] .donut-big{font-weight:800;font-size:22px;color:var(--charcoal);line-height:1}
+[data-page="proj"] .donut-tiny{font-size:9.5px;color:var(--muted);margin-top:2px}
+[data-page="proj"] .d-legend{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%;margin-top:12px}
+[data-page="proj"] .d-leg{text-align:center}
+[data-page="proj"] .d-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle}
+[data-page="proj"] .d-val{font-weight:800;font-size:16px}
+[data-page="proj"] .d-v1{color:var(--green)}
+[data-page="proj"] .d-v2{color:var(--amber)}
+[data-page="proj"] .d-v3{color:var(--muted)}
+[data-page="proj"] .d-lbl{font-size:9px;color:var(--muted);display:block;margin-top:1px}
+[data-page="proj"] .cat-body{padding:8px 16px 14px}
+[data-page="proj"] .cat-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+[data-page="proj"] .cat-row:last-child{border-bottom:none}
+[data-page="proj"] .cat-nm{width:66px;font-weight:600;color:var(--charcoal);flex-shrink:0}
+[data-page="proj"] .cat-track{flex:1;height:4px;background:var(--cream);border-radius:2px;overflow:hidden}
+[data-page="proj"] .cat-fill{height:100%;border-radius:2px}
+[data-page="proj"] .cat-n{font:500 10px/1 var(--mono);color:var(--muted);width:20px;text-align:right}
+[data-page="proj"] .bottom{display:grid;grid-template-columns:1fr 2fr;gap:14px;animation:fadeUp .4s .2s ease both}
+@media(max-width:900px){[data-page="proj"] .bottom{grid-template-columns:1fr}}
+[data-page="proj"] .ev-body{padding:14px 18px 18px}
+[data-page="proj"] .ev-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+[data-page="proj"] .ev-row:last-child{margin-bottom:0}
+[data-page="proj"] .ev-nm{font-size:10.5px;font-weight:500;color:var(--muted);width:108px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-page="proj"] .ev-track{flex:1;height:7px;background:var(--cream);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+[data-page="proj"] .ev-fill{height:100%;border-radius:4px}
+[data-page="proj"] .ev-pct{font:600 10px/1 var(--mono);width:44px;text-align:right;flex-shrink:0}
+[data-page="proj"] .sc-stats{display:flex;gap:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+[data-page="proj"] .sc-stat{flex:1;text-align:center;padding:0 8px}
+[data-page="proj"] .sc-stat:not(:last-child){border-right:1px solid var(--border)}
+[data-page="proj"] .sc-stat-lbl{font:600 10px/1 var(--mono);color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+[data-page="proj"] .sc-stat-val{font-weight:800;font-size:18px}
+/* ── FOOTER ── */
+.footer-bar{
+  background:var(--charcoal);
+  border-top:3px solid var(--red);
+  margin-top:28px;
+  padding:14px 28px;
+  display:flex;justify-content:space-between;align-items:center;
+  font:400 9.5px/1 var(--mono);color:rgba(255,255,255,0.4);
+  animation:fadeUp .4s .25s ease both;
+  gap:16px;flex-wrap:wrap;
+}
+[data-page="proj"] .footer-logo-mini{display:flex;align-items:center;gap:8px}
+[data-page="proj"] .footer-idh-box{background:var(--red);padding:3px 7px;font:800 11px/1 var(--font);color:#fff;border-radius:2px}
+[data-page="proj"] .footer-dept{font:500 9px/1 var(--mono);color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1px}
+[data-page="proj"] .footer-tagline{font:400 9px/1 var(--mono);color:rgba(200,16,46,0.6);letter-spacing:0.5px;font-style:italic}
+/* ── TOOLTIP ── */
+.tooltip{position:relative;cursor:default}
+[data-page="proj"] .tooltip::after{content:attr(data-tip);position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:var(--charcoal);color:#fff;font-size:10px;font-family:var(--mono);padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s;z-index:20}
+[data-page="proj"] .tooltip:hover::after{opacity:1}
+/* ── ANIMATIONS ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes grow{from{width:0!important}}
+[data-page="proj"] .prog-bar, [data-page="proj"] .ev-fill, [data-page="proj"] .cat-fill{animation:grow .9s cubic-bezier(.4,0,.2,1) both}
+[data-page="proj"] .dtbl tbody tr:nth-child(1){animation:fadeUp .35s .04s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(2){animation:fadeUp .35s .08s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(3){animation:fadeUp .35s .12s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(4){animation:fadeUp .35s .16s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(5){animation:fadeUp .35s .20s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(6){animation:fadeUp .35s .24s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(7){animation:fadeUp .35s .28s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(8){animation:fadeUp .35s .32s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(9){animation:fadeUp .35s .36s both}
+[data-page="proj"] .dtbl tbody tr:nth-child(10){animation:fadeUp .35s .40s both}
+
+
+
+/* ══════════════════════════════════════════════════════
+   PAGE 2 — ACTIVITY DASHBOARD
+══════════════════════════════════════════════════════ */
+
+:root {
+  --red:#C8102E; --red-dim:rgba(200,16,46,0.12);
+  --charcoal:#14151A; --ink:#1E2029; --card:#FFFFFF;
+  --page:#F5F2EB; --border:#E3E1DC; --muted:#6B7280;
+  --green:#2E7D32; --green-bg:#E8F5E9; --green-border:#A5D6A7;
+  --amber:#B45309; --amber-bg:#FEF3C7; --amber-border:#FCD34D;
+  --grey:#64748B; --grey-bg:#F1F5F9;
+  --rt:#1F4E78; --rt-bg:#EFF6FF; --rt-border:#BFDBFE;
+  --idh:#7C3AED; --idh-bg:#F5F3FF; --idh-border:#DDD6FE;
+  --apr:#0E7490; --may:#0369A1; --jun:#1D4ED8; --jul:#4338CA;
+  --font:'Sora',sans-serif; --mono:'JetBrains Mono',monospace;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.07);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--page);color:var(--charcoal);-webkit-font-smoothing:antialiased}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--charcoal);border-bottom:3px solid var(--red);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.topbar-logo{display:flex;align-items:center;gap:12px}
+.topbar-idh{background:#fff;color:var(--red);font:800 14px/1 var(--font);padding:4px 9px;border-radius:5px;letter-spacing:-.3px}
+.topbar-divider{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.topbar-title{color:#fff;font:500 12px/1 var(--font);opacity:.85}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-badge{background:var(--red);color:#fff;font:600 10px/1 var(--mono);padding:4px 10px;border-radius:20px}
+.topbar-week{color:rgba(255,255,255,.5);font:400 10px/1 var(--mono)}
+
+/* ── WRAP ── */
+.wrap{max-width:1440px;margin:0 auto;padding:24px 28px 64px}
+
+/* ── NAV TABS ── */
+.nav-tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:2px solid var(--border);padding-bottom:0}
+.tab{padding:10px 20px;font:600 12px/1 var(--font);color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;border-radius:6px 6px 0 0;white-space:nowrap}
+.tab:hover{color:var(--charcoal);background:rgba(0,0,0,.03)}
+.tab.active{color:var(--red);border-bottom-color:var(--red);background:#fff}
+
+/* ── SECTION ── */
+.section{display:none}.section.active{display:block}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 14px 11px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.k-total::before{background:var(--charcoal)}.kpi.k-done::before{background:var(--green)}.kpi.k-prog::before{background:var(--amber)}.kpi.k-pend::before{background:var(--grey)}.kpi.k-rt::before{background:var(--rt)}.kpi.k-idh::before{background:var(--idh)}.kpi.k-block::before{background:var(--red)}
+.kpi-val{font:800 26px/1 var(--font);margin-bottom:3px}
+.kpi.k-total .kpi-val{color:var(--charcoal)}.kpi.k-done .kpi-val{color:var(--green)}.kpi.k-prog .kpi-val{color:var(--amber)}.kpi.k-pend .kpi-val{color:var(--grey)}.kpi.k-rt .kpi-val{color:var(--rt)}.kpi.k-idh .kpi-val{color:var(--idh)}.kpi.k-block .kpi-val{color:var(--red)}
+.kpi-lbl{font:600 10px/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── MONTH SECTIONS ── */
+.month-grid{display:flex;flex-direction:column;gap:20px}
+.month-block{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.month-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.month-hdr-left{display:flex;align-items:center;gap:12px}
+.month-dot{width:10px;height:10px;border-radius:50%}
+.month-name{font:700 15px/1 var(--font)}
+.month-pills{display:flex;gap:6px}
+.mpill{font:600 10px/1 var(--mono);padding:3px 8px;border-radius:12px}
+.mpill-done{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.mpill-prog{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.mpill-pend{background:var(--grey-bg);color:var(--grey);border:1px solid #CBD5E1}
+.mpill-rt{background:var(--rt-bg);color:var(--rt);border:1px solid var(--rt-border)}
+.mpill-idh{background:var(--idh-bg);color:var(--idh);border:1px solid var(--idh-border)}
+.month-chevron{font-size:12px;color:var(--muted);transition:transform .2s}
+.month-chevron.open{transform:rotate(180deg)}
+.month-body{padding:0 20px 16px;overflow:hidden;transition:max-height .3s ease}
+
+/* ── ACTIVITY TABLE ── */
+.act-table{width:100%;border-collapse:collapse;margin-top:12px}
+.act-table th{font:600 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 10px;text-align:left;background:#FAFAF9;border-bottom:1px solid var(--border);white-space:nowrap}
+.act-table th.center{text-align:center}
+.act-table td{padding:8px 10px;font:400 11px/1.4 var(--font);border-bottom:1px solid #F3F0EA;vertical-align:middle}
+.act-table tr:last-child td{border-bottom:none}
+.act-table tr:hover td{background:#FAFAF9}
+.code-badge{font:700 10px/1 var(--mono);padding:2px 7px;border-radius:4px;background:#F1F5F9;color:var(--charcoal);white-space:nowrap}
+.del-tag{font:500 10px/1 var(--mono);padding:2px 6px;border-radius:3px;white-space:nowrap}
+.cat-tag{font:500 9px/1 var(--mono);padding:2px 6px;border-radius:3px}
+.desc-text{font:400 11px/1.4 var(--font);color:var(--charcoal);max-width:320px}
+.status-ic{font-size:13px;display:inline-block;width:20px;text-align:center}
+.owner-tag{font:700 10px/1 var(--mono);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.owner-rt{background:var(--rt-bg);color:var(--rt);border:1px solid var(--rt-border)}
+.owner-idh{background:var(--idh-bg);color:var(--idh);border:1px solid var(--idh-border)}
+.dep-code{font:600 10px/1 var(--mono);color:var(--muted);padding:2px 6px;background:#F5F2EB;border-radius:3px;white-space:nowrap}
+.dep-none{color:#C4BAA8;font-style:italic;font-size:10px}
+.pct-bar{display:flex;align-items:center;gap:6px}
+.pct-track{width:60px;height:5px;background:#EEE;border-radius:3px;overflow:hidden}
+.pct-fill{height:100%;border-radius:3px}
+.pct-val{font:600 10px/1 var(--mono);color:var(--muted);min-width:26px}
+.blocker-row td{background:#FFF5F5!important}
+.blocker-row .desc-text{color:#991B1B}
+
+/* ── CATEGORY COLORS ── */
+.cat-Design{background:#FEF9C3;color:#854D0E}
+.cat-Backend{background:#DBEAFE;color:#1E40AF}
+.cat-Frontend{background:#D1FAE5;color:#065F46}
+.cat-Testing{background:#FCE7F3;color:#9D174D}
+.cat-QA{background:#EDE9FE;color:#4C1D95}
+.cat-Security{background:#FEE2E2;color:#991B1B}
+
+/* ── DELIVERABLE COLORS ── */
+.del-A{background:#FEF2F2;color:#C8102E}.del-B{background:#F0FDF4;color:#166534}
+.del-C{background:#EFF6FF;color:#1E40AF}.del-D{background:#FFF7ED;color:#9A3412}
+.del-E{background:#F5F3FF;color:#4C1D95}.del-F{background:#ECFDF5;color:#065F46}
+.del-G{background:#F0F9FF;color:#0C4A6E}.del-H{background:#FDF4FF;color:#6B21A8}
+.del-I{background:#F8FAFC;color:#334155}
+
+/* ── DEPENDENCY MAP ── */
+.dep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:4px}
+@media(max-width:1100px){.dep-grid{grid-template-columns:repeat(2,1fr)}}
+.dep-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.dep-card-hdr{padding:10px 14px;font:700 11px/1 var(--font);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.dep-card-body{padding:8px 14px 12px;display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto}
+.dep-row{display:flex;align-items:flex-start;gap:8px;padding:4px 0;border-bottom:1px solid #F3F0EA;font-size:11px}
+.dep-row:last-child{border-bottom:none}
+.dep-from{font:700 10px/1 var(--mono);padding:2px 5px;border-radius:3px;background:#F1F5F9;color:var(--charcoal);flex-shrink:0;margin-top:1px}
+.dep-arrow{color:#CBD5E1;flex-shrink:0;margin-top:1px;font-size:10px}
+.dep-to-list{display:flex;flex-wrap:wrap;gap:3px}
+.dep-to{font:600 10px/1 var(--mono);padding:1px 5px;border-radius:3px;background:var(--red-dim);color:var(--red)}
+.dep-desc{color:var(--muted);font-size:10px;line-height:1.3;margin-top:1px;flex:1}
+
+/* ── RESPONSIBILITY VIEW ── */
+.resp-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.resp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.resp-hdr{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.resp-hdr-left{display:flex;align-items:center;gap:10px}
+.resp-hdr-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 13px/1 var(--font)}
+.resp-hdr-rt .resp-hdr-icon{background:var(--rt-bg);color:var(--rt)}
+.resp-hdr-idh .resp-hdr-icon{background:var(--idh-bg);color:var(--idh)}
+.resp-hdr-name{font:700 14px/1 var(--font)}
+.resp-hdr-sub{font:400 11px/1 var(--mono);color:var(--muted);margin-top:2px}
+.resp-stats{display:flex;gap:12px}
+.resp-stat{text-align:center}
+.resp-stat-val{font:800 18px/1 var(--font)}
+.resp-stat-lbl{font:500 9px/1 var(--mono);color:var(--muted);text-transform:uppercase;margin-top:2px}
+.resp-body{padding:14px 20px}
+.resp-del-row{margin-bottom:12px}
+.resp-del-name{font:600 11px/1 var(--font);color:var(--charcoal);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.resp-acts{display:flex;flex-direction:column;gap:3px}
+.resp-act{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:6px;font-size:11px}
+.resp-act-done{background:var(--green-bg)}
+.resp-act-prog{background:var(--amber-bg)}
+.resp-act-pend{background:var(--grey-bg)}
+.resp-act-blocker{background:#FEF2F2;border:1px solid #FECACA}
+.resp-act-code{font:700 10px/1 var(--mono);width:32px;flex-shrink:0}
+.resp-act-desc{flex:1;color:var(--charcoal);line-height:1.3}
+.resp-act-status{font-size:11px;flex-shrink:0}
+.blocker-label{font:700 9px/1 var(--mono);color:var(--red);background:#FEE2E2;padding:1px 5px;border-radius:3px;flex-shrink:0}
+
+/* ── WHERE WE STAND ── */
+
+.stand-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;box-shadow:var(--shadow)}
+.stand-title{font:700 12px/1 var(--font);color:var(--charcoal);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.del-progress-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.del-progress-row:last-child{margin-bottom:0}
+.del-letter-badge{width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 var(--mono);flex-shrink:0}
+.del-prog-name{font:500 10px/1 var(--font);color:var(--charcoal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del-prog-track{width:80px;height:5px;background:#EEE;border-radius:3px;overflow:hidden;flex-shrink:0}
+.del-prog-fill{height:100%;border-radius:3px}
+.del-prog-pct{font:600 10px/1 var(--mono);color:var(--muted);width:28px;text-align:right;flex-shrink:0}
+.risk-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.risk-item:last-child{border-bottom:none}
+.risk-icon{font-size:14px;flex-shrink:0}
+.risk-body{flex:1}
+.risk-title{font:600 11px/1.3 var(--font);color:var(--charcoal);margin-bottom:2px}
+.risk-sub{font:400 10px/1.3 var(--font);color:var(--muted)}
+.risk-badge{font:700 9px/1 var(--mono);padding:2px 6px;border-radius:10px;flex-shrink:0;margin-top:1px}
+.rb-high{background:#FEE2E2;color:#991B1B}
+.rb-med{background:#FEF3C7;color:#92400E}
+.rb-low{background:#D1FAE5;color:#065F46}
+.next-item{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);align-items:center}
+.next-item:last-child{border-bottom:none}
+.next-code{font:700 10px/1 var(--mono);padding:2px 6px;border-radius:4px;background:#F1F5F9;color:var(--charcoal);flex-shrink:0}
+.next-desc{font:400 11px/1.3 var(--font);color:var(--charcoal);flex:1}
+.next-owner{font:600 9px/1 var(--mono);padding:1px 6px;border-radius:8px}
+
+/* ── FOOTER ── */
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--muted)}
+
+
+/* ── SLICERS ── */
+.slicer-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:18px;box-shadow:var(--shadow)}
+.slicer-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.slicer-label{font:700 9px/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;padding-right:4px;border-right:1px solid var(--border)}
+.slicer-btn{font:600 10px/1 var(--mono);padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.slicer-btn:hover{border-color:var(--charcoal);color:var(--charcoal)}
+.slicer-btn.active{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+.slicer-btn.s-done.active{background:var(--green);border-color:var(--green)}
+.slicer-btn.s-prog.active{background:var(--amber);border-color:var(--amber)}
+.slicer-btn.s-pend.active{background:var(--grey);border-color:var(--grey)}
+.slicer-btn.s-rt.active{background:var(--rt);border-color:var(--rt)}
+.slicer-btn.s-idh.active{background:var(--idh);border-color:var(--idh)}
+.slicer-btn.s-block.active{background:var(--red);border-color:var(--red)}
+.slicer-sep{width:1px;height:20px;background:var(--border)}
+.slicer-results{font:500 10px/1 var(--mono);color:var(--muted);margin-left:auto;white-space:nowrap}
+.slicer-reset{font:600 10px/1 var(--mono);padding:5px 11px;border-radius:20px;border:1px solid #FECACA;background:#FFF5F5;color:var(--red);cursor:pointer;transition:all .15s}
+.slicer-reset:hover{background:#FEE2E2}
+/* row visibility */
+.act-row-hidden{display:none!important}
+/* month block visibility */
+.month-block-hidden{display:none!important}
+/* empty month message */
+.month-empty{padding:10px 0;font:400 11px/1 var(--font);color:var(--muted);font-style:italic;text-align:center}
+
+/* ── DELAYED WIDGET ── */
+.delayed-grid{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.delayed-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid #FECACA;background:#FFF5F5}
+.delayed-item-code{font:800 10px/1 var(--mono);color:var(--red);flex-shrink:0;padding:2px 6px;background:#FEE2E2;border-radius:4px;margin-top:1px}
+.delayed-item-body{flex:1;min-width:0}
+.delayed-item-desc{font:400 10px/1.3 var(--font);color:#991B1B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.delayed-item-meta{font:500 9px/1 var(--mono);color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
+.delayed-item-owner{font:700 9px/1 var(--mono);padding:1px 5px;border-radius:8px}
+.delayed-count{font:800 28px/1 var(--font);color:var(--red);margin-bottom:2px}
+.delayed-sub{font:500 10px/1 var(--mono);color:var(--muted)}
+.stand-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:16px;margin-bottom:20px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wrap>*{animation:fadeUp .35s ease both}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE BOTTOM TAB BAR (replaces top nav on mobile)
+══════════════════════════════════════════════════════ */
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 56px;
+  background: #14151A;
+  border-top: 3px solid #C8102E;
+  z-index: 2000;
+  flex-direction: row;
+}
+.mobile-tab-bar button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: rgba(255,255,255,0.45);
+  font: 600 9px/1 'Sora', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 6px 4px 4px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+  margin: 0;
+}
+.mobile-tab-bar button.active { color: #C8102E; }
+.mobile-tab-bar button .mtab-icon { font-size: 18px; line-height: 1; }
+.mobile-tab-bar button .mtab-label { font-size: 9px; }
+
+/* ══════════════════════════════════════════════════════
+   GLOBAL MOBILE BASE
+══════════════════════════════════════════════════════ */
+html, body { overflow-x: hidden; }
+[data-page="proj"] .wrap { max-width: 1400px; margin: 0 auto; padding: 0 0 56px; }
+
+/* ══════════════════════════════════════════════════════
+   SMALL MOBILE  ≤ 640px
+══════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* Hide top nav, show bottom tab bar */
+  .master-nav { display: none !important; }
+  .mobile-tab-bar { display: flex; }
+
+  /* Push content above bottom tab bar */
+  body { padding-bottom: 56px; }
+
+  /* ── Page 1 Wrap ── */
+  [data-page="proj"] .wrap { padding: 0 0 0; }
+  .content { padding: 12px 12px 0; }
+
+  /* ── Header ── */
+  .header { padding: 12px 12px 10px; flex-direction: column; gap: 8px; }
+  [data-page="proj"] .header-right { text-align: left; }
+  [data-page="proj"] h1 { font-size: 17px; }
+  [data-page="proj"] .sub { font-size: 10.5px; }
+
+  /* ── Timeline ── */
+  .timeline-wrap { padding: 10px 10px; margin-bottom: 10px; }
+  [data-page="proj"] .tl-bar { gap: 2px; }
+  [data-page="proj"] .tl-w { height: 22px; font-size: 7.5px; border-radius: 3px; }
+  [data-page="proj"] .tl-meta { font-size: 8.5px; flex-direction: column; gap: 2px; }
+  [data-page="proj"] .tl-label { font-size: 8.5px; flex-direction: column; gap: 2px; }
+
+  /* ── KPI Row: 2 columns ── */
+  .kpi-row { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; margin-bottom: 10px; }
+  [data-page="proj"] .kpi { padding: 11px 10px 9px; }
+  [data-page="proj"] .kpi-val { font-size: 21px; }
+  [data-page="proj"] .kpi-lbl { font-size: 9px; }
+  [data-page="proj"] .kpi-sub { font-size: 8px; }
+  [data-page="proj"] .kpi-tag { font-size: 8px; bottom: 6px; right: 7px; }
+
+  /* ── Main grid: 1 column ── */
+  .main { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; }
+
+  /* ── Deliverables table: hide weight, done/prog/pend counts ── */
+  [data-page="proj"] .dtbl th:nth-child(3),
+  [data-page="proj"] .dtbl td:nth-child(3),
+  [data-page="proj"] .dtbl th:nth-child(5),
+  [data-page="proj"] .dtbl td:nth-child(5),
+  [data-page="proj"] .dtbl th:nth-child(6),
+  [data-page="proj"] .dtbl td:nth-child(6),
+  [data-page="proj"] .dtbl th:nth-child(7),
+  [data-page="proj"] .dtbl td:nth-child(7) { display: none !important; }
+  [data-page="proj"] .dtbl th { font-size: 8px; padding: 6px 6px; }
+  [data-page="proj"] .dtbl td { padding: 7px 6px; font-size: 10px; }
+  [data-page="proj"] .dname { font-size: 10px; }
+  [data-page="proj"] .prog-row { min-width: 75px; }
+  [data-page="proj"] .prog-pct { font-size: 9px; min-width: 24px; }
+
+  /* ── Bottom grid: 1 column ── */
+  .bottom { grid-template-columns: 1fr !important; gap: 10px; }
+
+  /* ── EV bars ── */
+  [data-page="proj"] .ev-nm { width: 76px; font-size: 9px; }
+  [data-page="proj"] .ev-pct { width: 36px; font-size: 9px; }
+
+  /* ── S-Curve stats: 3 cols ── */
+  [data-page="proj"] .sc-stats { flex-wrap: wrap; margin-top: 10px; }
+  [data-page="proj"] .sc-stat { flex: 0 0 33.33%; border-right: none !important; padding: 4px 3px; }
+  [data-page="proj"] .sc-stat-lbl { font-size: 7.5px; }
+  [data-page="proj"] .sc-stat-val { font-size: 14px; }
+
+  /* ── Footer bar ── */
+  .footer-bar { padding: 8px 12px; font-size: 8px; flex-direction: column; gap: 3px; align-items: flex-start; }
+
+  /* ── Page 2 wrap ── */
+  #page-act .wrap { padding: 12px 12px 16px; }
+
+  /* ── KPI Strip: 2 cols ── */
+  .kpi-strip { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; margin-bottom: 14px; }
+  .kpi-strip .kpi { padding: 11px 10px 9px; }
+  .kpi-strip .kpi-val { font-size: 22px; }
+  .kpi-strip .kpi-lbl { font-size: 9px; }
+
+  /* ── Tabs: horizontal scroll ── */
+  .nav-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 9px 12px; font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+
+  /* ── Slicer bar: stacked ── */
+  .slicer-bar { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 10px; }
+  .slicer-group { flex-wrap: wrap; gap: 5px; }
+  .slicer-label { font-size: 8px; }
+  .slicer-btn { font-size: 9px; padding: 5px 9px; }
+  .slicer-sep { display: none; }
+  .slicer-results { margin-left: 0; font-size: 9px; }
+  .slicer-reset { font-size: 9px; padding: 5px 9px; }
+
+  /* ── Activity table → card layout ── */
+  .act-table { width: 100%; }
+  .act-table thead { display: none; }
+  .act-table, .act-table tbody { display: block; }
+  .act-table tr {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 3px 6px;
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .act-table tr:hover td { background: transparent; }
+  .act-table td { display: block; padding: 0; border: none; vertical-align: top; }
+  /* Row 1: code | deliverable | category */
+  .act-table td:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .act-table td:nth-child(2) { grid-column: 2; grid-row: 1; }
+  .act-table td:nth-child(3) { grid-column: 3; grid-row: 1; text-align: right; }
+  /* Row 2: description spans full width */
+  .act-table td:nth-child(4) { grid-column: 1 / -1; grid-row: 2; padding-top: 2px; }
+  .desc-text { font-size: 11px !important; white-space: normal !important; max-width: 100% !important; line-height: 1.35 !important; }
+  /* Row 3: owner | status | progress — depends on hidden */
+  .act-table td:nth-child(5) { grid-column: 1; grid-row: 3; padding-top: 3px; }
+  .act-table td:nth-child(6) { grid-column: 2; grid-row: 3; padding-top: 3px; }
+  .act-table td:nth-child(7) { grid-column: 3; grid-row: 3; padding-top: 3px; }
+  .act-table td:nth-child(8) { display: none; }
+  .pct-track { width: 50px; }
+  .pct-val { font-size: 9px; }
+
+  /* ── Month blocks ── */
+  .month-pills { flex-wrap: wrap; gap: 3px; }
+  .mpill { font-size: 8.5px; padding: 2px 5px; }
+  .month-name { font-size: 12px; }
+  .month-hdr { padding: 10px 10px; }
+  .month-body { padding: 0 6px 12px !important; }
+
+  /* ── Dependency / Responsibility / Where We Stand: 1 col ── */
+  .dep-grid { grid-template-columns: 1fr !important; }
+  .resp-grid { grid-template-columns: 1fr !important; }
+  .stand-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Responsibility header ── */
+  .resp-hdr { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .resp-stats { flex-wrap: wrap; gap: 8px; }
+
+  /* ── Footer ── */
+  .footer { flex-direction: column; gap: 4px; font-size: 8.5px; }
+}
+
+/* ══════════════════════════════════════════════════════
+   MEDIUM MOBILE  641–900px
+══════════════════════════════════════════════════════ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .master-nav { padding: 0 16px; }
+  .master-nav-dept-parent { display: none; }
+  .master-nav-right { display: none; }
+  .master-nav-btn { padding: 6px 12px; font-size: 10px; }
+  [data-page="proj"] .wrap { padding: 0 0 40px; }
+  .content { padding: 14px 16px 0; }
+  .kpi-row { grid-template-columns: repeat(3, 1fr) !important; }
+  .kpi-strip { grid-template-columns: repeat(4, 1fr) !important; }
+  .main { grid-template-columns: 1fr !important; }
+  .bottom { grid-template-columns: 1fr !important; }
+  .dep-grid { grid-template-columns: 1fr 1fr !important; }
+  .resp-grid { grid-template-columns: 1fr !important; }
+  .stand-grid { grid-template-columns: 1fr 1fr !important; }
+  .header { padding: 14px 16px 12px; }
+  .footer-bar { padding: 10px 16px; font-size: 8.5px; }
+  #page-act .wrap { padding: 16px 16px 40px; }
+  .slicer-bar { flex-wrap: wrap; gap: 10px; }
+  .slicer-sep { display: none; }
+  [data-page="proj"] .sc-stats { flex-wrap: wrap; }
+  [data-page="proj"] .sc-stat { flex: 0 0 33.33%; border-right: none !important; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ── MASTER NAVIGATION ─────────────────────────────────────────── -->
+<div class="master-nav">
+  <div class="master-nav-logo">
+    <div class="master-nav-idh">IDH</div>
+    <div class="master-nav-vdivider"></div>
+    <div class="master-nav-dept">
+      <div class="master-nav-dept-name">Strategic Planning &amp; PMO</div>
+      <div class="master-nav-dept-parent">Integrated Diagnostics Holdings</div>
+    </div>
+  </div>
+  <div class="master-nav-pages">
+    <button class="master-nav-btn active" onclick="switchPage('proj',this)">
+      <span>📊</span> Project Dashboard
+    </button>
+    <button class="master-nav-btn" onclick="switchPage('act',this)">
+      <span>📋</span> Activity Dashboard
+    </button>
+  </div>
+  <div class="master-nav-right">
+    <span class="master-nav-badge">Sprint 1 · Al Mokhtabar · W9</span>
+    <span class="master-nav-live">Live Dashboard</span>
+  </div>
+</div>
+
+<!-- ── MOBILE BOTTOM TAB BAR ──────────────────────────────────────── -->
+<div class="mobile-tab-bar" id="mobileTabBar">
+  <button class="active" onclick="switchPage('proj',this)" id="mtab-proj">
+    <span class="mtab-icon">📊</span>
+    <span class="mtab-label">Dashboard</span>
+  </button>
+  <button onclick="switchPage('act',this)" id="mtab-act">
+    <span class="mtab-icon">📋</span>
+    <span class="mtab-label">Activities</span>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 1 — PROJECT DASHBOARD (default / active)
+══════════════════════════════════════════════════════ -->
+<div id="page-proj" class="page active" data-page="proj">
+
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-info">
+      <div class="header-eyebrow">IDH · Al Mokhtabar · Sprint 1</div>
+      <h1>Patient App <em>&amp;</em> Website — Project Dashboard</h1>
+      <div class="sub">Mobile Application · Website · Loyalty Program &nbsp;|&nbsp; 15 Apr – 13 Aug 2026 &nbsp;|&nbsp; 17 Weeks</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="rdate">Report Date: 18-Jun-2026</div>
+    <div class="status-pill">Week 9 of 17 · In Progress</div>
+  </div>
+</div>
+
+<!-- ── CONTENT ── -->
+<div class="content">
+
+<!-- Timeline -->
+<div class="timeline-wrap">
+  <div class="tl-label">Sprint Progress — 17 Weeks<span>▼ Now: W9 (18-Jun-2026)</span></div>
+  <div class="tl-bar" id="tlBar"></div>
+  <div class="tl-meta"><span>Start: 15 Apr 2026</span><span>Elapsed: 64 days of 120 &nbsp;|&nbsp; Remaining: 56 days &nbsp;|&nbsp; Planned EV at today: 30.06%</span><span>End: 13 Aug 2026</span></div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi k1"><div class="kpi-ico">📋</div><div class="kpi-val">119</div><div class="kpi-lbl">Total Activities</div><div class="kpi-sub">9 deliverables · Sprint 1</div></div>
+  <div class="kpi k2"><div class="kpi-ico">✔</div><div class="kpi-val">7</div><div class="kpi-lbl">Completed</div><div class="kpi-sub">5.9% of total</div></div>
+  <div class="kpi k3"><div class="kpi-ico">▶</div><div class="kpi-val">52</div><div class="kpi-lbl">In Progress</div><div class="kpi-sub">43.7% active now</div></div>
+  <div class="kpi k4"><div class="kpi-ico">⏳</div><div class="kpi-val">60</div><div class="kpi-lbl">Not Started</div><div class="kpi-sub">50.4% pending</div></div>
+  <div class="kpi k5"><div class="kpi-ico">📈</div><div class="kpi-val">30.09%</div><div class="kpi-lbl">Overall EV</div><div class="kpi-sub">vs 30.06% planned</div><div class="kpi-tag tag-ahead">+0.03% ahead ▲</div></div>
+  <div class="kpi k6"><div class="kpi-ico">🗓️</div><div class="kpi-val">56</div><div class="kpi-lbl">Days Remaining</div><div class="kpi-sub">64 elapsed of 120</div></div>
+</div>
+
+<!-- Main grid -->
+<div class="main">
+  <div class="panel">
+    <div class="ph"><div class="ph-title">Deliverable Progress <small>Sprint 1 · 9 Deliverables</small></div><div class="badge badge-green">EV: 30.09%</div></div>
+    <table class="dtbl"><thead><tr><th colspan="2">Deliverable</th><th>Wt%</th><th>EV%</th><th>✔</th><th>▶</th><th>⏳</th><th>Progress</th></tr></thead><tbody id="dtblBody"></tbody></table>
+  </div>
+  <div class="rc">
+    <div class="panel">
+      <div class="ph"><div class="ph-title">Status Distribution</div></div>
+      <div class="donut-body">
+        <div class="donut-container"><svg class="donut-svg" viewBox="0 0 130 130" id="donutSvg"></svg><div class="donut-mid"><div class="donut-big">119</div><div class="donut-tiny">activities</div></div></div>
+        <div class="d-legend">
+          <div class="d-leg"><span class="d-dot" style="background:var(--green)"></span><div class="d-val d-v1">7</div><span class="d-lbl">Done</span></div>
+          <div class="d-leg"><span class="d-dot" style="background:var(--amber)"></span><div class="d-val d-v2">52</div><span class="d-lbl">Active</span></div>
+          <div class="d-leg"><span class="d-dot" style="background:#BDC3C7"></span><div class="d-val d-v3">60</div><span class="d-lbl">Pending</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><div class="ph"><div class="ph-title">By Category</div></div><div class="cat-body" id="catBody"></div></div>
+  </div>
+</div>
+
+<!-- Bottom -->
+<div class="bottom">
+  <div class="panel">
+    <div class="ph"><div class="ph-title">Earned Value % by Deliverable</div><div class="badge">Max: 8.673%</div></div>
+    <div class="ev-body" id="evBody"></div>
+  </div>
+  <div class="panel">
+    <div class="ph">
+      <div class="ph-title">S-Curve — Planned vs Actual Progress <small>S-Curve Sheet</small></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--charcoal)"><span style="display:inline-block;width:20px;height:3px;background:var(--charcoal);border-radius:2px"></span>Planned</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--red)"><span style="display:inline-block;width:20px;height:3px;background:var(--red);border-radius:2px"></span>Actual</span>
+        <div class="badge badge-green">+0.03% Ahead ▲</div>
+      </div>
+    </div>
+    <div style="padding:16px 18px 14px">
+      <canvas id="scurveCanvas" style="width:100%;display:block;min-height:120px"></canvas>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sc-stat-lbl">Planned W9</div><div class="sc-stat-val" style="color:var(--charcoal)">30.06%</div></div>
+        <div class="sc-stat"><div class="sc-stat-lbl">Actual W9</div><div class="sc-stat-val" style="color:var(--red)">30.09%</div></div>
+        <div class="sc-stat"><div class="sc-stat-lbl">Variance</div><div class="sc-stat-val" style="color:var(--green)">+0.03%</div></div>
+        <div class="sc-stat"><div class="sc-stat-lbl">W7-W9 Progress</div><div class="sc-stat-val" style="color:#E67E22">10.19%</div></div>
+        <div class="sc-stat"><div class="sc-stat-lbl">W8 Actual</div><div class="sc-stat-val" style="color:var(--muted)">23.40%</div></div>
+        <div class="sc-stat"><div class="sc-stat-lbl">Sprint Target</div><div class="sc-stat-val" style="color:var(--teal)">100%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- ── FOOTER BAR ── -->
+<div class="footer-bar">
+  <span>IDH · Al Mokhtabar Patient App · Sprint 1</span>
+  <span>Report: 18-Jun-2026 · Week 9 of 17 · PM: Ahmed Essam · Vendor: Robotack</span>
+  <span>Source: Data Entry + Dashboard + S-Curve Sheets · 119 Activities · 9 Deliverables</span>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PAGE 2 — ACTIVITY DASHBOARD
+══════════════════════════════════════════════════════ -->
+<div id="page-act" class="page">
+<div class="wrap">
+
+<!-- KPI Strip -->
+<div class="kpi-strip">
+  <div class="kpi k-total"><div class="kpi-val">119</div><div class="kpi-lbl">Total Activities</div></div>
+  <div class="kpi k-done"><div class="kpi-val">7</div><div class="kpi-lbl">✔ Completed</div></div>
+  <div class="kpi k-prog"><div class="kpi-val">52</div><div class="kpi-lbl">► In Progress</div></div>
+  <div class="kpi k-pend"><div class="kpi-val">60</div><div class="kpi-lbl">⏳ Not Started</div></div>
+  <div class="kpi k-rt"><div class="kpi-val">109</div><div class="kpi-lbl">Robotack (RT)</div></div>
+  <div class="kpi k-idh"><div class="kpi-val">10</div><div class="kpi-lbl">IDH Owner</div></div>
+  <div class="kpi k-block"><div class="kpi-val">9</div><div class="kpi-lbl">🔴 IDH Blocked</div></div>
+</div>
+
+<!-- Nav Tabs -->
+<div class="nav-tabs">
+  <div class="tab active" onclick="switchTab('monthly')">📅 Monthly Activities</div>
+  <div class="tab" onclick="switchTab('dependency')">🔗 Dependency Map</div>
+  <div class="tab" onclick="switchTab('responsibility')">👤 Responsibility</div>
+  <div class="tab" onclick="switchTab('status')">📊 Where We Stand</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 1: MONTHLY ACTIVITIES
+══════════════════════════════════════════════ -->
+<div id="tab-monthly" class="section active">
+<div class="slicer-bar" id="slicerBar">
+  <div class="slicer-group">
+    <span class="slicer-label">Month</span>
+    <button class="slicer-btn active" data-filter="month" data-val="all" onclick="applyFilter('month','all',this)">All</button>
+    <button class="slicer-btn" data-filter="month" data-val="Apr" onclick="applyFilter('month','Apr',this)">April</button>
+    <button class="slicer-btn" data-filter="month" data-val="May" onclick="applyFilter('month','May',this)">May</button>
+    <button class="slicer-btn" data-filter="month" data-val="Jun" onclick="applyFilter('month','Jun',this)">June</button>
+    <button class="slicer-btn" data-filter="month" data-val="Jul" onclick="applyFilter('month','Jul',this)">July</button>
+  </div>
+  <div class="slicer-sep"></div>
+  <div class="slicer-group">
+    <span class="slicer-label">Status</span>
+    <button class="slicer-btn active" data-filter="status" data-val="all" onclick="applyFilter('status','all',this)">All</button>
+    <button class="slicer-btn s-done" data-filter="status" data-val="✔" onclick="applyFilter('status','✔',this)">✔ Done</button>
+    <button class="slicer-btn s-prog" data-filter="status" data-val="►" onclick="applyFilter('status','►',this)">► Active</button>
+    <button class="slicer-btn s-pend" data-filter="status" data-val="⏳" onclick="applyFilter('status','⏳',this)">⏳ Pending</button>
+  </div>
+  <div class="slicer-sep"></div>
+  <div class="slicer-group">
+    <span class="slicer-label">Owner</span>
+    <button class="slicer-btn active" data-filter="owner" data-val="all" onclick="applyFilter('owner','all',this)">All</button>
+    <button class="slicer-btn s-rt" data-filter="owner" data-val="RT" onclick="applyFilter('owner','RT',this)">RT</button>
+    <button class="slicer-btn s-idh" data-filter="owner" data-val="IDH" onclick="applyFilter('owner','IDH',this)">IDH</button>
+    <button class="slicer-btn s-block" data-filter="owner" data-val="IDH_BLOCKED" onclick="applyFilter('owner','IDH_BLOCKED',this)">🔴 IDH Blocked</button>
+  </div>
+  <div class="slicer-sep"></div>
+  <div class="slicer-group">
+    <span class="slicer-label">Deliverable</span>
+    <button class="slicer-btn active" data-filter="del" data-val="all" onclick="applyFilter('del','all',this)">All</button>
+    <button class="slicer-btn" data-filter="del" data-val="A" onclick="applyFilter('del','A',this)">A</button>
+    <button class="slicer-btn" data-filter="del" data-val="B" onclick="applyFilter('del','B',this)">B</button>
+    <button class="slicer-btn" data-filter="del" data-val="C" onclick="applyFilter('del','C',this)">C</button>
+    <button class="slicer-btn" data-filter="del" data-val="D" onclick="applyFilter('del','D',this)">D</button>
+    <button class="slicer-btn" data-filter="del" data-val="E" onclick="applyFilter('del','E',this)">E</button>
+    <button class="slicer-btn" data-filter="del" data-val="F" onclick="applyFilter('del','F',this)">F</button>
+    <button class="slicer-btn" data-filter="del" data-val="G" onclick="applyFilter('del','G',this)">G</button>
+    <button class="slicer-btn" data-filter="del" data-val="H" onclick="applyFilter('del','H',this)">H</button>
+    <button class="slicer-btn" data-filter="del" data-val="I" onclick="applyFilter('del','I',this)">I</button>
+  </div>
+  <div class="slicer-sep"></div>
+  <div class="slicer-group">
+    <span class="slicer-label">Category</span>
+    <button class="slicer-btn active" data-filter="cat" data-val="all" onclick="applyFilter('cat','all',this)">All</button>
+    <button class="slicer-btn" data-filter="cat" data-val="Design" onclick="applyFilter('cat','Design',this)">Design</button>
+    <button class="slicer-btn" data-filter="cat" data-val="Backend" onclick="applyFilter('cat','Backend',this)">Backend</button>
+    <button class="slicer-btn" data-filter="cat" data-val="Frontend" onclick="applyFilter('cat','Frontend',this)">Frontend</button>
+    <button class="slicer-btn" data-filter="cat" data-val="Testing" onclick="applyFilter('cat','Testing',this)">Testing</button>
+    <button class="slicer-btn" data-filter="cat" data-val="QA" onclick="applyFilter('cat','QA',this)">QA</button>
+    <button class="slicer-btn" data-filter="cat" data-val="Security" onclick="applyFilter('cat','Security',this)">Security</button>
+  </div>
+  <button class="slicer-reset" onclick="resetFilters()">✕ Reset</button>
+  <span class="slicer-results" id="slicerCount">119 activities</span>
+</div>
+<div class="month-grid" id="monthlyGrid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 2: DEPENDENCY MAP
+══════════════════════════════════════════════ -->
+<div id="tab-dependency" class="section">
+<div class="dep-grid" id="depGrid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 3: RESPONSIBILITY
+══════════════════════════════════════════════ -->
+<div id="tab-responsibility" class="section">
+<div class="resp-grid" id="respGrid"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB 4: WHERE WE STAND
+══════════════════════════════════════════════ -->
+<div id="tab-status" class="section">
+<div class="stand-grid" id="standGrid"></div>
+</div>
+
+<div class="footer">
+  <span>IDH · Al Mokhtabar Patient App · Sprint 1</span>
+  <span>Report: 18-Jun-2026 · W9 of 17 · PM: Ahmed Essam · Vendor: Robotack</span>
+  <span>Source: IDH_-_Project_Management.xlsx · 119 Activities · 9 Deliverables</span>
+</div>
+</div><!-- /wrap -->
+</div>
+
+<script>
+// ── Page switcher ──────────────────────────────────────────────────
+function switchPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.master-nav-btn').forEach(b => b.classList.remove('active'));
+  // mobile tab bar
+  document.querySelectorAll('.mobile-tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  // also activate corresponding mobile tab
+  const mTab = document.getElementById('mtab-' + name);
+  if (mTab) mTab.classList.add('active');
+  if (name === 'proj' && typeof drawSCurve === 'function') {
+    requestAnimationFrame(() => requestAnimationFrame(safeDrawSCurve));
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── PROJECT DASHBOARD ─────────────────────────────────────────────
+
+const DELS=[{id:1,name:'Registration & Login',wt:18,ev:8.673,done:3,prog:11,pend:8,pct:48.2,color:'#C8102E'},{id:2,name:'Sub-Accounts & Relatives',wt:7,ev:3.194,done:1,prog:5,pend:2,pct:45.6,color:'#285350'},{id:3,name:'Test History',wt:7,ev:2.363,done:0,prog:5,pend:3,pct:33.8,color:'#2980B9'},{id:4,name:'Online Payments',wt:12,ev:2.880,done:0,prog:4,pend:6,pct:24.0,color:'#E67E22'},{id:5,name:'Notification Center',wt:8,ev:1.600,done:0,prog:4,pend:6,pct:20.0,color:'#8E44AD'},{id:6,name:'Personalised Campaigns',wt:6,ev:0.300,done:0,prog:2,pend:6,pct:5.0,color:'#27AE60'},{id:7,name:'CMS',wt:16,ev:6.864,done:2,prog:12,pend:6,pct:42.9,color:'#14151A'},{id:8,name:'Website Phase 1',wt:13,ev:4.015,done:1,prog:8,pend:8,pct:30.9,color:'#16A085'},{id:9,name:'QA & Testing',wt:13,ev:0.203,done:0,prog:1,pend:16,pct:1.6,color:'#6B6F78'}];
+const CATS=[{name:'Backend',n:41,color:'#2980B9'},{name:'Frontend',n:27,color:'#E67E22'},{name:'Testing',n:24,color:'#27AE60'},{name:'QA',n:16,color:'#16A085'},{name:'Design',n:10,color:'#8E44AD'},{name:'Security',n:1,color:'#C8102E'}];
+const SCURVE={labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13','W14','W15','W16','W17'],dates:['21 Apr','28 Apr','5 May','12 May','19 May','26 May','2 Jun','9 Jun','16 Jun','23 Jun','30 Jun','7 Jul','14 Jul','21 Jul','28 Jul','4 Aug','13 Aug'],planned:[1.3547,2.7093,5.0707,7.8348,11.7039,16.015,20.3401,24.8273,30.0597,37.1555,44.2512,51.3251,58.3244,70.8966,83.4424,92.4261,100.0],actual:[0,0,1.4,12.24,14.43,14.43,19.87,23.40,30.09,null,null,null,null,null,null,null,null],todayW:8};
+
+// ── Dashboard render — idempotent + per-section isolation (iOS Safari hardened) ──
+function buildDashboard(){
+  // Timeline
+  try{
+    const tl=document.getElementById('tlBar');
+    if(tl){ tl.innerHTML='';
+      SCURVE.labels.forEach((w,i)=>{const el=document.createElement('div');el.className='tl-w '+(i<8?'past':i===8?'now':'future');el.textContent=w;tl.appendChild(el);});
+    }
+  }catch(e){ console.error('timeline render failed',e); }
+
+  // Deliverables table
+  try{
+    const tbody=document.getElementById('dtblBody');
+    if(tbody){ tbody.innerHTML='';
+      DELS.forEach(d=>{const evCls=d.ev>0?'ev-on':'ev-off';const tr=document.createElement('tr');tr.innerHTML=`<td style="width:26px;padding-right:0"><span class="dn" style="background:${d.color}">${d.id}</span></td><td><span class="dname tooltip" data-tip="${d.done+d.prog+d.pend} acts · Wt: ${d.wt}%">${d.name}</span></td><td style="text-align:center;font:500 11px/1 var(--mono);color:var(--muted)">${d.wt}%</td><td style="text-align:center"><span class="ev-tag ${evCls}">${d.ev.toFixed(3)}%</span></td><td class="cnt-done">${d.done||'—'}</td><td class="cnt-prog">${d.prog||'—'}</td><td class="cnt-pend">${d.pend}</td><td><div class="prog-row"><div class="prog-bg"><div class="prog-bar" style="width:${d.pct}%;background:${d.color}"></div></div><span class="prog-pct">${d.pct.toFixed(0)}%</span></div></td>`;tbody.appendChild(tr);});
+      const tot=document.createElement('tr');tot.className='tot';tot.innerHTML=`<td></td><td><span class="dname">SPRINT 1 TOTAL</span></td><td style="text-align:center;font:600 11px/1 var(--mono)">100%</td><td style="text-align:center"><span class="ev-tag ev-on">30.092%</span></td><td class="cnt-done">7</td><td class="cnt-prog">52</td><td class="cnt-pend">60</td><td><div class="prog-row"><div class="prog-bg"><div class="prog-bar" style="width:30.1%;background:#fff"></div></div><span class="prog-pct">30.1%</span></div></td>`;tbody.appendChild(tot);
+    }
+  }catch(e){ console.error('table render failed',e); }
+
+  // Donut (SVG transform attribute — robust on iOS, no CSS transform-origin dependency)
+  try{
+    const svg=document.getElementById('donutSvg');
+    if(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild);
+      const NS='http://www.w3.org/2000/svg',cx=65,cy=65,r=46,sw=12,circ=2*Math.PI*r;
+      const bg=document.createElementNS(NS,'circle');bg.setAttribute('cx',cx);bg.setAttribute('cy',cy);bg.setAttribute('r',r);bg.setAttribute('fill','none');bg.setAttribute('stroke','#F1EDE5');bg.setAttribute('stroke-width',sw);svg.appendChild(bg);
+      let offset=0;[{v:7,c:'#2E7D32'},{v:52,c:'#B45309'},{v:60,c:'#BDC3C7'}].forEach(s2=>{const pct=s2.v/119,dash=pct*circ,gap=circ-dash;const c=document.createElementNS(NS,'circle');c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',r);c.setAttribute('fill','none');c.setAttribute('stroke',s2.c);c.setAttribute('stroke-width',sw);c.setAttribute('stroke-dasharray',`${dash} ${gap}`);c.setAttribute('stroke-dashoffset',-offset*circ);c.setAttribute('stroke-linecap','round');c.setAttribute('transform','rotate(-90 '+cx+' '+cy+')');svg.appendChild(c);offset+=pct;});
+    }
+  }catch(e){ console.error('donut render failed',e); }
+
+  // Categories
+  try{
+    const catBody=document.getElementById('catBody');
+    if(catBody){ catBody.innerHTML='';
+      CATS.forEach(c=>{const row=document.createElement('div');row.className='cat-row';row.innerHTML=`<span class="cat-nm">${c.name}</span><div class="cat-track"><div class="cat-fill" style="width:${c.n/119*100}%;background:${c.color}"></div></div><span class="cat-n" style="color:${c.color}">${c.n}</span>`;catBody.appendChild(row);});
+    }
+  }catch(e){ console.error('categories render failed',e); }
+
+  // EV bars
+  try{
+    const evBody=document.getElementById('evBody');
+    if(evBody){ evBody.innerHTML='';
+      const maxEV=8.673;const sn={1:'Reg & Login',2:'Sub-Accounts',3:'Test History',4:'Payments',5:'Notifications',6:'Campaigns',7:'CMS',8:'Website',9:'QA'};
+      DELS.forEach(d=>{const row=document.createElement('div');row.className='ev-row';row.innerHTML=`<span class="ev-nm tooltip" data-tip="Wt: ${d.wt}%">${sn[d.id]}</span><div class="ev-track"><div class="ev-fill" style="width:${d.ev/maxEV*100}%;background:${d.color}"></div></div><span class="ev-pct" style="color:${d.ev>0?d.color:'var(--muted)'}"> ${d.ev.toFixed(3)}%</span>`;evBody.appendChild(row);});
+    }
+  }catch(e){ console.error('ev render failed',e); }
+}
+
+// S-Curve
+function drawSCurve(){
+  const canvas=document.getElementById('scurveCanvas');
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=canvas.parentElement.clientWidth-36;
+  const cssH=Math.round(cssW*0.37);
+  canvas.style.height=cssH+'px';canvas.width=cssW*dpr;canvas.height=cssH*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const W=cssW,H=cssH,P={top:24,right:20,bottom:50,left:50};
+  const cW=W-P.left-P.right,cH=H-P.top-P.bottom,N=17;
+  const IDH_RED='#C8102E',IDH_DARK='#14151A',IDH_GREEN='#2E7D32',IDH_GREY='#E3E1DC',IDH_MUTED='#94A3B8',IDH_TEAL='#285350';
+  const xP=i=>P.left+(i/(N-1))*cW;
+  const yP=pct=>P.top+cH-(pct/100)*cH;
+  ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,W,H);
+  [0,20,40,60,80,100].forEach(v=>{const y=yP(v);ctx.beginPath();ctx.strokeStyle=v===0||v===100?'#CBD5E1':IDH_GREY;ctx.lineWidth=v===0||v===100?1.2:0.7;ctx.setLineDash([]);ctx.moveTo(P.left,y);ctx.lineTo(P.left+cW,y);ctx.stroke();ctx.fillStyle=IDH_MUTED;ctx.font=`500 9px 'JetBrains Mono',monospace`;ctx.textAlign='right';ctx.fillText(v+'%',P.left-7,y+3.5);});
+  SCURVE.labels.forEach((lbl,i)=>{const x=xP(i);if(i>0){ctx.beginPath();ctx.strokeStyle=IDH_GREY;ctx.lineWidth=0.5;ctx.setLineDash([3,3]);ctx.moveTo(x,P.top);ctx.lineTo(x,P.top+cH);ctx.stroke();ctx.setLineDash([]);}if(i%2===0||i===N-1){ctx.fillStyle=IDH_MUTED;ctx.font=`500 8.5px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText(lbl,x,P.top+cH+14);ctx.fillStyle='#BDC3C7';ctx.font=`400 7.5px 'JetBrains Mono',monospace`;ctx.fillText(SCURVE.dates[i],x,P.top+cH+26);}});
+  // Helper: draw rounded rectangle (Safari-compatible)
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+  }
+  const todayX=xP(SCURVE.todayW);ctx.beginPath();ctx.strokeStyle=IDH_RED;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.moveTo(todayX,P.top-10);ctx.lineTo(todayX,P.top+cH);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=IDH_RED;ctx.font=`700 9px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText('TODAY',todayX,P.top-13);
+  const actualPts=SCURVE.actual.map((v,i)=>v!==null?{v,i}:null).filter(Boolean);
+  if(actualPts.length>1){ctx.beginPath();ctx.moveTo(xP(0),yP(SCURVE.planned[0]));for(let i=1;i<actualPts.length;i++)ctx.lineTo(xP(i),yP(SCURVE.planned[i]));for(let i=actualPts.length-1;i>=0;i--){if(SCURVE.actual[i]!==null)ctx.lineTo(xP(i),yP(SCURVE.actual[i]));}ctx.closePath();ctx.fillStyle='rgba(46,125,50,0.07)';ctx.fill();}
+  ctx.beginPath();ctx.strokeStyle=IDH_DARK;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.setLineDash([]);SCURVE.planned.forEach((v,i)=>{i===0?ctx.moveTo(xP(i),yP(v)):ctx.lineTo(xP(i),yP(v));});ctx.stroke();
+  SCURVE.planned.forEach((v,i)=>{ctx.beginPath();ctx.arc(xP(i),yP(v),i===SCURVE.todayW?5:2.5,0,Math.PI*2);ctx.fillStyle=i===SCURVE.todayW?IDH_DARK:'#fff';ctx.strokeStyle=IDH_DARK;ctx.lineWidth=1.8;ctx.fill();ctx.stroke();});
+  if(actualPts.length>1){ctx.beginPath();ctx.strokeStyle=IDH_RED;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.setLineDash([]);actualPts.forEach((pt,idx)=>{idx===0?ctx.moveTo(xP(pt.i),yP(pt.v)):ctx.lineTo(xP(pt.i),yP(pt.v));});ctx.stroke();}
+  actualPts.forEach(pt=>{const x=xP(pt.i),y=yP(pt.v);ctx.beginPath();ctx.arc(x,y,pt.i===SCURVE.todayW?6:3.5,0,Math.PI*2);ctx.fillStyle=pt.i===SCURVE.todayW?IDH_RED:'#fff';ctx.strokeStyle=IDH_RED;ctx.lineWidth=2.2;ctx.fill();ctx.stroke();
+    if(pt.i===SCURVE.todayW){const lbl=pt.v.toFixed(2)+'%';ctx.font=`700 10px 'JetBrains Mono',monospace`;const lw=ctx.measureText(lbl).width+14;ctx.fillStyle=IDH_RED;roundRect(x-lw/2,y-28,lw,18,4);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(lbl,x,y-15.5);}
+    if(pt.i===3){ctx.fillStyle=IDH_RED;ctx.font=`500 8.5px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText('12.24%',xP(pt.i),yP(pt.v)-9);}
+    if(pt.i===4&&pt.v>0){ctx.fillStyle=IDH_RED;ctx.font=`500 8px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText('14.43%',xP(pt.i),yP(pt.v)-8);}if(pt.i===6&&pt.v>0){ctx.fillStyle=IDH_RED;ctx.font=`500 8px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText('19.87%',xP(pt.i),yP(pt.v)-8);}if(pt.i===7&&pt.v>0){ctx.fillStyle=IDH_RED;ctx.font=`500 8px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.fillText('23.40%',xP(pt.i),yP(pt.v)-8);}});
+  // Planned label at TODAY — use the biweekly planned value (20.13%) not the weekly array value
+  const pw5x=xP(SCURVE.todayW),pw5y=yP(30.06),planLbl='30.06%';
+  ctx.font=`700 10px 'JetBrains Mono',monospace`;const planW=ctx.measureText(planLbl).width+14;ctx.fillStyle=IDH_DARK;roundRect(pw5x-planW/2,pw5y+10,planW,18,4);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(planLbl,pw5x,pw5y+23);
+  // Variance annotation between actual and planned at TODAY line — green since ahead
+  const midY=(yP(SCURVE.actual[SCURVE.todayW])+yP(30.06))/2;
+  ctx.font=`700 10px 'Sora',sans-serif`;ctx.fillStyle=IDH_GREEN;ctx.textAlign='left';ctx.fillText('▲ +0.03% ahead',xP(SCURVE.todayW)+16,midY+4);
+  ctx.font=`600 9px 'JetBrains Mono',monospace`;ctx.fillStyle=IDH_TEAL;ctx.textAlign='right';ctx.fillText('Target: 100%',xP(N-1)-4,yP(100)-6);
+  ctx.fillStyle=IDH_MUTED;ctx.font=`500 9px 'Sora',sans-serif`;ctx.textAlign='center';ctx.fillText('Sprint Weeks  (15 Apr – 13 Aug 2026)',P.left+cW/2,H-4);
+}
+// ── Resilient init: render dashboard + draw S-Curve across every iOS lifecycle hook ──
+function safeDrawSCurve(){
+  try{
+    const canvas=document.getElementById('scurveCanvas');
+    if(!canvas||!canvas.parentElement) return;
+    if(canvas.parentElement.clientWidth>10) drawSCurve();
+  }catch(e){ console.error('s-curve draw failed',e); }
+}
+function initDashboard(){
+  buildDashboard();
+  safeDrawSCurve();
+}
+// Run as soon as possible (script is after the DOM) and again on every relevant event
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', initDashboard);
+}else{
+  initDashboard();
+}
+window.addEventListener('load', function(){
+  // a few rAF retries to cover late layout/font settling on mobile
+  let n=24;(function spin(){ safeDrawSCurve(); if(--n>0) requestAnimationFrame(spin); })();
+  buildDashboard();
+});
+window.addEventListener('pageshow', initDashboard);          // bfcache restore on iOS
+window.addEventListener('orientationchange', function(){ setTimeout(safeDrawSCurve,150); });
+window.addEventListener('resize', safeDrawSCurve);
+// Redraw automatically once the panel actually has width (handles hidden→visible + reflow)
+try{
+  if('ResizeObserver' in window){
+    const cv=document.getElementById('scurveCanvas');
+    if(cv&&cv.parentElement){ new ResizeObserver(function(){ safeDrawSCurve(); }).observe(cv.parentElement); }
+  }
+}catch(e){}
+
+
+// ── ACTIVITY DASHBOARD ────────────────────────────────────────────
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const DELIVERABLES = {
+  'A':'Registration & Login','B':'Sub-Accounts','C':'Test History',
+  'D':'Online Payments','E':'Notification Center','F':'Campaigns',
+  'G':'CMS','H':'Website','I':'QA & Testing'
+};
+const DEL_COLORS = {
+  'A':'#C8102E','B':'#166534','C':'#1E40AF','D':'#9A3412',
+  'E':'#4C1D95','F':'#065F46','G':'#0C4A6E','H':'#6B21A8','I':'#334155'
+};
+
+const ACTS = [
+  // A – Registration & Login
+  {code:'A1',del:'A',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:90,dep:'—',desc:'UI/UX design for registration and login screens'},
+  {code:'A2',del:'A',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:98,dep:'A1',desc:'UI/UX design for OTP countdown timer'},
+  {code:'A3',del:'A',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:80,dep:'A1',desc:'UI/UX design for the lockout screen'},
+  {code:'A4',del:'A',cat:'Backend',owner:'RT',month:'Apr',status:'✔',pct:100,dep:'A1–A3',desc:'OTP attempt counter — reject after 3 failed attempts'},
+  {code:'A5',del:'A',cat:'Backend',owner:'RT',month:'Apr',status:'✔',pct:100,dep:'A4',desc:'15-minute lockout logic per mobile number'},
+  {code:'A6',del:'A',cat:'Backend',owner:'IDH',month:'Apr',status:'►',pct:60,dep:'A1–A3',desc:'OTP generation and SMS gateway integration'},
+  {code:'A7',del:'A',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'A6',desc:'LMS integration — create Patient ID on registration'},
+  {code:'A8',del:'A',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'A1–A3',desc:'User registration API — validate Egyptian mobile format'},
+  {code:'A9',del:'A',cat:'Backend',owner:'RT',month:'May',status:'✔',pct:100,dep:'A1–A3',desc:'Session management — token expiry after login'},
+  {code:'A10',del:'A',cat:'Backend',owner:'RT',month:'May',status:'►',pct:10,dep:'A9, A6',desc:'Login API with OTP verification flow'},
+  {code:'A11',del:'A',cat:'Frontend',owner:'RT',month:'May',status:'►',pct:70,dep:'A1–A3',desc:'Implement registration screen with mobile number input'},
+  {code:'A12',del:'A',cat:'Frontend',owner:'RT',month:'May',status:'►',pct:90,dep:'A8',desc:'First-run age gate blocking users under 13'},
+  {code:'A13',del:'A',cat:'Frontend',owner:'RT',month:'May',status:'►',pct:72,dep:'A1–A3',desc:'Arabic/English bilingual support for login screens'},
+  {code:'A14',del:'A',cat:'Frontend',owner:'RT',month:'Jun',status:'►',pct:70,dep:'A10, A11',desc:'Implement OTP entry screen and auto-verify logic'},
+  {code:'A15',del:'A',cat:'Testing',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'A6',desc:'Unit testing for OTP generation and 5-min expiry'},
+  {code:'A16',del:'A',cat:'Testing',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'A6',desc:'Integration testing for SMS gateway'},
+  {code:'A17',del:'A',cat:'Testing',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'A5',desc:'Integration test: 15-min lockout trigger'},
+  {code:'A18',del:'A',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A4, A5',desc:'E2E test: fail OTP 3 times → lockout → unlock'},
+  {code:'A19',del:'A',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A12',desc:'E2E test: under-13 age gate blocks progression'},
+  {code:'A20',del:'A',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A13',desc:'Test bilingual display of login screens'},
+  {code:'A21',del:'A',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A9',desc:'Test session timeout behavior'},
+  {code:'A22',del:'A',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A11–A14',desc:'End-to-end testing for registration and login flow'},
+  // B – Sub-Accounts
+  {code:'B1',del:'B',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:80,dep:'—',desc:'UI/UX design for sub-account management screens'},
+  {code:'B2',del:'B',cat:'Backend',owner:'RT',month:'May',status:'✔',pct:100,dep:'B1',desc:'Sub-account data model and database schema'},
+  {code:'B3',del:'B',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'B2',desc:'API to add/edit/delete relatives linked to main account'},
+  {code:'B4',del:'B',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:95,dep:'B2',desc:'Role and permission logic for sub-accounts'},
+  {code:'B5',del:'B',cat:'Frontend',owner:'RT',month:'Jun',status:'►',pct:15,dep:'B2–B4',desc:"Implement 'Add Relative' form with relationship selector"},
+  {code:'B6',del:'B',cat:'Frontend',owner:'RT',month:'Jun',status:'►',pct:15,dep:'B2–B4',desc:'Implement sub-account list and profile management'},
+  {code:'B7',del:'B',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'B5, B6',desc:'Unit testing for sub-account CRUD operations'},
+  {code:'B8',del:'B',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'B3–B6',desc:'End-to-end testing for adding and managing relatives'},
+  // C – Test History
+  {code:'C1',del:'C',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:80,dep:'—',desc:'UI/UX design for test history screens'},
+  {code:'C2',del:'C',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'C1',desc:'API to fetch patient test history, results, and invoices'},
+  {code:'C3',del:'C',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'C2',desc:'API to rename test names based on user input'},
+  {code:'C4',del:'C',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:60,dep:'C2',desc:'Filtering and pagination logic for test records'},
+  {code:'C5',del:'C',cat:'Frontend',owner:'RT',month:'Jun',status:'►',pct:10,dep:'C2–C4',desc:'Implement test history list screen with filters'},
+  {code:'C6',del:'C',cat:'Frontend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'C2–C4, C5',desc:'Implement test result detail view with history charts'},
+  {code:'C7',del:'C',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'C2–C4',desc:'Unit testing for history fetch and filter APIs'},
+  {code:'C8',del:'C',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'C5, C6',desc:'End-to-end testing for viewing and renaming results'},
+  // D – Online Payments
+  {code:'D1',del:'D',cat:'Design',owner:'RT',month:'May',status:'►',pct:60,dep:'—',desc:'UI/UX design for payment flow and confirmation screens'},
+  {code:'D2',del:'D',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'D1',desc:'Payment gateway integration (API keys, webhooks)'},
+  {code:'D3',del:'D',cat:'Backend',owner:'IDH',month:'May',status:'►',pct:60,dep:'D2',desc:'Order creation and payment initiation API'},
+  {code:'D4',del:'D',cat:'Backend',owner:'IDH',month:'Jun',status:'►',pct:60,dep:'D2, D3',desc:'Payment status tracking and callback handling'},
+  {code:'D5',del:'D',cat:'Backend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'D3, D4',desc:'Refund and cancellation flow'},
+  {code:'D6',del:'D',cat:'Frontend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'D2–D4',desc:'Implement payment screen with card/wallet options'},
+  {code:'D7',del:'D',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'D6',desc:'Implement payment confirmation and receipt screen'},
+  {code:'D8',del:'D',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'D2',desc:'Unit testing for payment gateway integration'},
+  {code:'D9',del:'D',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'D6, D7',desc:'End-to-end testing for full payment cycle'},
+  {code:'D10',del:'D',cat:'Security',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'D2–D4',desc:'PCI-DSS compliance review and security audit'},
+  // E – Notification Center
+  {code:'E1',del:'E',cat:'Design',owner:'RT',month:'May',status:'►',pct:60,dep:'—',desc:'UI/UX design for notification center and inbox'},
+  {code:'E2',del:'E',cat:'Backend',owner:'RT',month:'May',status:'⏳',pct:0,dep:'E1',desc:'Notification data model (type, status, timestamps)'},
+  {code:'E3',del:'E',cat:'Backend',owner:'RT',month:'May',status:'►',pct:80,dep:'E2',desc:'Queue-based dispatch system'},
+  {code:'E4',del:'E',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:40,dep:'E2',desc:'Device/token management'},
+  {code:'E5',del:'E',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:20,dep:'E3, E4',desc:'Push notification service integration (FCM/APNs)'},
+  {code:'E6',del:'E',cat:'Backend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'E3–E5',desc:'Notification creation and dispatch API'},
+  {code:'E7',del:'E',cat:'Frontend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'E2–E6',desc:'Implement notification center screen with read/unread'},
+  {code:'E8',del:'E',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'E7',desc:'Implement in-app notification badge and alerts'},
+  {code:'E9',del:'E',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'E6',desc:'Unit testing for notification dispatch logic'},
+  {code:'E10',del:'E',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'E7, E8',desc:'End-to-end testing for push and in-app notifications'},
+  // F – Campaigns
+  {code:'F1',del:'F',cat:'Design',owner:'RT',month:'May',status:'⏳',pct:0,dep:'—',desc:'UI/UX design for notification preferences screen'},
+  {code:'F2',del:'F',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:30,dep:'F1',desc:'User segmentation and targeting rules engine'},
+  {code:'F3',del:'F',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:10,dep:'F2',desc:'Campaign creation and scheduling API'},
+  {code:'F4',del:'F',cat:'Backend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'F2, F3',desc:'Personalization logic (name, test type, history-based)'},
+  {code:'F5',del:'F',cat:'Backend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'F3',desc:'Campaign analytics and delivery tracking'},
+  {code:'F6',del:'F',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'F2–F5',desc:'Implement notification preference settings screen'},
+  {code:'F7',del:'F',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'F2, F3',desc:'Unit testing for segmentation and targeting logic'},
+  {code:'F8',del:'F',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'F6',desc:'End-to-end testing for campaign delivery'},
+  // G – CMS
+  {code:'G1',del:'G',cat:'Design',owner:'RT',month:'Apr',status:'►',pct:80,dep:'—',desc:'CMS portal UI/UX design (admin panel)'},
+  {code:'G2',del:'G',cat:'Backend',owner:'RT',month:'Apr',status:'✔',pct:100,dep:'G1',desc:'CMS data models (articles, banners, FAQs)'},
+  {code:'G3',del:'G',cat:'Backend',owner:'RT',month:'Apr',status:'✔',pct:100,dep:'G2',desc:'Content creation, edit, and publish APIs'},
+  {code:'G4',del:'G',cat:'Backend',owner:'RT',month:'May',status:'►',pct:20,dep:'G2',desc:'Media upload and asset management service'},
+  {code:'G5',del:'G',cat:'Backend',owner:'RT',month:'May',status:'►',pct:50,dep:'G2',desc:'Smart deep link generation and management service'},
+  {code:'G6',del:'G',cat:'Backend',owner:'RT',month:'May',status:'►',pct:50,dep:'G4, G5',desc:'Confirmation page & configurable CTA management'},
+  {code:'G7',del:'G',cat:'Backend',owner:'RT',month:'May',status:'►',pct:20,dep:'G6',desc:'Special campaign type configuration'},
+  {code:'G8',del:'G',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:90,dep:'G2, G3',desc:'Bilingual content management support (Arabic/English)'},
+  {code:'G9',del:'G',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:10,dep:'G3',desc:'Content versioning and draft/publish workflow'},
+  {code:'G10',del:'G',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:18,dep:'G6–G8',desc:'Dynamic campaign/promo content management'},
+  {code:'G11',del:'G',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:70,dep:'G6–G8',desc:'Notification campaign configuration module'},
+  {code:'G12',del:'G',cat:'Backend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'G10, G11',desc:'Campaign landing form builder APIs'},
+  {code:'G13',del:'G',cat:'Frontend',owner:'RT',month:'Jun',status:'►',pct:70,dep:'G5',desc:'Admin portal UI for deep link creation/editing'},
+  {code:'G14',del:'G',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G12',desc:'Campaign landing form management UI'},
+  {code:'G15',del:'G',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:90,dep:'G2–G12',desc:'Implement CMS admin portal (web-based)'},
+  {code:'G16',del:'G',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:90,dep:'G11',desc:'Admin UI for segment-specific popup notifications'},
+  {code:'G17',del:'G',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G14–G16',desc:'Integrate dynamic CMS content in mobile app screens'},
+  {code:'G18',del:'G',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G3–G5',desc:'Unit testing for content CRUD and publish workflows'},
+  {code:'G19',del:'G',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G13–G16',desc:'E2E testing for forms, CTAs, deep links, and popups'},
+  {code:'G20',del:'G',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G15–G17',desc:'End-to-end testing for content display in app'},
+  // H – Website
+  {code:'H1',del:'H',cat:'Design',owner:'RT',month:'May',status:'⏳',pct:0,dep:'—',desc:'Website wireframes and responsive UI/UX design'},
+  {code:'H2',del:'H',cat:'Backend',owner:'RT',month:'Jun',status:'►',pct:10,dep:'H1',desc:'Website backend setup and API integration'},
+  {code:'H3',del:'H',cat:'Backend',owner:'RT',month:'Jun',status:'✔',pct:100,dep:'H1, A10',desc:'Authentication (login/register) web flow'},
+  {code:'H4',del:'H',cat:'Backend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'G5, H3',desc:'Website support for smart deep links'},
+  {code:'H5',del:'H',cat:'Backend',owner:'IDH',month:'Jun',status:'►',pct:60,dep:'D2',desc:'Online payment integration for website'},
+  {code:'H6',del:'H',cat:'Frontend',owner:'RT',month:'Jun',status:'⏳',pct:0,dep:'G6, H3',desc:'Confirmation page with configurable CTA'},
+  {code:'H7',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G12, H3',desc:'Campaign landing pages integrated with CMS forms'},
+  {code:'H8',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:70,dep:'H3–H5, H1',desc:'Develop responsive website (home, login, payments)'},
+  {code:'H9',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:70,dep:'E7, H3',desc:'Integrate notification center on website'},
+  {code:'H10',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:25,dep:'G3, H3',desc:'Website privacy/consent content pages via CMS'},
+  {code:'H11',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:60,dep:'H8',desc:'Arabic/English bilingual website content support'},
+  {code:'H12',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'G16, H8',desc:'Popup marketing messages on website/app entry points'},
+  {code:'H13',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:70,dep:'G10, H8',desc:'Dynamic promotional banners from CMS'},
+  {code:'H14',del:'H',cat:'Frontend',owner:'RT',month:'Jul',status:'►',pct:60,dep:'G3, H8',desc:'Integrate CMS-driven content pages'},
+  {code:'H15',del:'H',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'H8–H11',desc:'Cross-browser and responsive design testing'},
+  {code:'H16',del:'H',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'H7, H8',desc:'Cross-browser testing for campaign pages and CTAs'},
+  {code:'H17',del:'H',cat:'Testing',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'H8–H14',desc:'End-to-end testing for all Phase 1 features on website'},
+  // I – QA & Testing
+  {code:'I1',del:'I',cat:'QA',owner:'RT',month:'Jun',status:'►',pct:25,dep:'—',desc:'BRD Review & Analysis'},
+  {code:'I2',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'►',pct:0,dep:'A–H (all mobile)',desc:'Functional testing – mobile app (iOS & Android)'},
+  {code:'I3',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'H (website)',desc:'Functional testing – website'},
+  {code:'I4',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2, I3',desc:'Regression testing after bug fixes'},
+  {code:'I5',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2, I3',desc:'Performance and load testing'},
+  {code:'I6',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'D10, I2',desc:'Security testing (auth, payments, data privacy)'},
+  {code:'I7',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I4–I6',desc:'User Acceptance Testing (UAT) with IDH stakeholders'},
+  {code:'I8',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2, I3',desc:'Bug tracking, reporting, and re-testing'},
+  {code:'I9',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A–H (all UI)',desc:'UI/UX Testing: visual conformance against Figma specs'},
+  {code:'I10',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I1',desc:'Test plan and test case preparation for Phase 1'},
+  {code:'I11',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2, I3',desc:'Integration Testing'},
+  {code:'I12',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2, I3',desc:'Usability Testing: bilingual Arabic/English interface'},
+  {code:'I13',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I1, I10',desc:'Define test scope, entry/exit criteria'},
+  {code:'I14',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2',desc:'Responsive Testing: iOS, Android, Huawei HMS'},
+  {code:'I15',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'A–H (all APIs)',desc:'API Testing: all 17 APIs in scope'},
+  {code:'I16',del:'I',cat:'QA',owner:'RT',month:'Jul',status:'⏳',pct:0,dep:'I2–I15',desc:'Final sign-off and go-live readiness report'},
+];
+
+const MONTH_ORDER = ['Apr','May','Jun','Jul'];
+const MONTH_COLORS = {Apr:'#0E7490',May:'#0369A1',Jun:'#1D4ED8',Jul:'#4338CA'};
+const MONTH_FULL = {Apr:'April 2026',May:'May 2026',Jun:'June 2026',Jul:'July 2026'};
+
+// IDH blocked = IDH owner + not started
+const IDH_BLOCKED = ACTS.filter(a=>a.owner==='IDH'&&a.status==='⏳');
+
+// ── STATUS COLOR ──────────────────────────────────────────────────────────────
+function statusColor(s){ return s==='✔'?'var(--green)':s==='►'?'var(--amber)':'var(--grey)'; }
+function pctBarColor(s,pct){
+  if(s==='✔') return 'var(--green)';
+  if(s==='►') return pct>=70?'var(--amber)':'#F59E0B';
+  return '#CBD5E1';
+}
+
+// ── TAB SWITCHER ──────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 1: MONTHLY ACTIVITIES
+// ══════════════════════════════════════════════════════════════════════════════
+function buildMonthly(){
+  const grid = document.getElementById('monthlyGrid');
+  MONTH_ORDER.forEach(mon=>{
+    const acts = ACTS.filter(a=>a.month===mon);
+    if(!acts.length) return;
+    const done = acts.filter(a=>a.status==='✔').length;
+    const prog = acts.filter(a=>a.status==='►').length;
+    const pend = acts.filter(a=>a.status==='⏳').length;
+    const rt   = acts.filter(a=>a.owner==='RT').length;
+    const idh  = acts.filter(a=>a.owner==='IDH').length;
+    const block= acts.filter(a=>a.owner==='IDH'&&a.status==='⏳').length;
+
+    const blockCount = acts.filter(a=>a.owner==='IDH'&&a.status==='⏳').length;
+
+    const col = MONTH_COLORS[mon];
+    const rows = acts.map(a=>{
+      const isBlocker = a.owner==='IDH'&&a.status==='⏳';
+      const pctColor = pctBarColor(a.status,a.pct);
+      return `<tr class="${isBlocker?'blocker-row':''}">
+        <td><span class="code-badge">${a.code}</span></td>
+        <td><span class="del-tag del-${a.del}" style="font:600 9px/1 var(--mono);padding:2px 6px;border-radius:3px">${a.del}: ${DELIVERABLES[a.del].split(' ').slice(0,2).join(' ')}</span></td>
+        <td><span class="cat-tag cat-${a.cat}">${a.cat}</span></td>
+        <td class="desc-text">${a.desc}${isBlocker?'&nbsp;<span style="font:700 9px/1 var(--mono);color:var(--red);background:#FEE2E2;padding:1px 5px;border-radius:3px;margin-left:4px">IDH BLOCKED</span>':''}</td>
+        <td><span class="owner-tag ${a.owner==='RT'?'owner-rt':'owner-idh'}">${a.owner}</span></td>
+        <td style="text-align:center"><span style="color:${statusColor(a.status)};font-size:13px">${a.status}</span></td>
+        <td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:${a.pct}%;background:${pctColor}"></div></div><span class="pct-val">${a.pct}%</span></div></td>
+        <td>${a.dep==='—'?'<span class="dep-none">Start</span>':`<span class="dep-code">${a.dep}</span>`}</td>
+      </tr>`;
+    }).join('');
+
+    const blockBadge = blockCount>0?`<span class="mpill" style="background:#FEE2E2;color:#991B1B;border:1px solid #FECACA">🔴 ${blockCount} IDH blocked</span>`:'';
+
+    grid.innerHTML += `
+    <div class="month-block">
+      <div class="month-hdr" onclick="toggleMonth(this)">
+        <div class="month-hdr-left">
+          <div class="month-dot" style="background:${col}"></div>
+          <div class="month-name" style="color:${col}">${MONTH_FULL[mon]}</div>
+          <div class="month-pills">
+            <span class="mpill mpill-done">✔ ${done}</span>
+            <span class="mpill mpill-prog">► ${prog}</span>
+            <span class="mpill mpill-pend">⏳ ${pend}</span>
+            <span class="mpill mpill-rt">RT: ${rt}</span>
+            ${idh>0?`<span class="mpill mpill-idh">IDH: ${idh}</span>`:''}
+            ${blockBadge}
+          </div>
+        </div>
+        <span class="month-chevron open">▼</span>
+      </div>
+      <div class="month-body">
+        <table class="act-table">
+          <thead><tr>
+            <th>Code</th><th>Deliverable</th><th>Category</th>
+            <th>Activity</th><th class="center">Owner</th>
+            <th class="center">Status</th><th>Progress</th><th>Depends On</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  });
+}
+
+function toggleMonth(hdr){
+  const body = hdr.nextElementSibling;
+  const chevron = hdr.querySelector('.month-chevron');
+  if(chevron.classList.contains('open')){
+    body.style.maxHeight='0'; body.style.padding='0 20px';
+    chevron.classList.remove('open');
+  } else {
+    body.style.maxHeight='2000px'; body.style.padding='0 20px 16px';
+    chevron.classList.add('open');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 2: DEPENDENCY MAP
+// ══════════════════════════════════════════════════════════════════════════════
+function buildDependency(){
+  const grid = document.getElementById('depGrid');
+  Object.keys(DELIVERABLES).forEach(letter=>{
+    const delActs = ACTS.filter(a=>a.del===letter);
+    const col = DEL_COLORS[letter];
+    const rows = delActs.map(a=>{
+      const depHtml = a.dep==='—'
+        ? '<span class="dep-none">No predecessor</span>'
+        : a.dep.split(',').map(d=>`<span class="dep-to">${d.trim()}</span>`).join('');
+      return `<div class="dep-row">
+        <span class="dep-from" style="background:${col}20;color:${col}">${a.code}</span>
+        <span class="dep-arrow">→</span>
+        <div style="flex:1">
+          <div class="dep-to-list">${depHtml}</div>
+          <div class="dep-desc">${a.desc.length>55?a.desc.slice(0,55)+'…':a.desc}</div>
+        </div>
+        <span style="color:${statusColor(a.status)};font-size:12px">${a.status}</span>
+      </div>`;
+    }).join('');
+
+    grid.innerHTML += `
+    <div class="dep-card">
+      <div class="dep-card-hdr" style="border-left:4px solid ${col}">
+        <span class="del-letter-badge" style="background:${col}20;color:${col};width:24px;height:24px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font:800 11px/1 var(--mono)">${letter}</span>
+        <span style="font:700 12px/1 var(--font)">${DELIVERABLES[letter]}</span>
+        <span style="font:500 10px/1 var(--mono);color:var(--muted);margin-left:auto">${delActs.length} acts</span>
+      </div>
+      <div class="dep-card-body">${rows}</div>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 3: RESPONSIBILITY
+// ══════════════════════════════════════════════════════════════════════════════
+function buildResponsibility(){
+  const grid = document.getElementById('respGrid');
+
+  ['RT','IDH'].forEach(owner=>{
+    const ownerActs = ACTS.filter(a=>a.owner===owner);
+    const done = ownerActs.filter(a=>a.status==='✔').length;
+    const prog = ownerActs.filter(a=>a.status==='►').length;
+    const pend = ownerActs.filter(a=>a.status==='⏳').length;
+    const isIDH = owner==='IDH';
+    const col = isIDH ? 'var(--idh)' : 'var(--rt)';
+
+    // Group by deliverable
+    let delRows = '';
+    Object.keys(DELIVERABLES).forEach(letter=>{
+      const acts = ownerActs.filter(a=>a.del===letter);
+      if(!acts.length) return;
+      const delColor = DEL_COLORS[letter];
+      const actRows = acts.map(a=>{
+        const isBlocker = a.owner==='IDH'&&a.status==='⏳';
+        const rowClass = isBlocker?'resp-act resp-act-blocker':
+          a.status==='✔'?'resp-act resp-act-done':
+          a.status==='►'?'resp-act resp-act-prog':'resp-act resp-act-pend';
+        return `<div class="${rowClass}">
+          <span class="resp-act-code" style="color:${delColor}">${a.code}</span>
+          <span class="resp-act-desc">${a.desc.length>60?a.desc.slice(0,60)+'…':a.desc}</span>
+          ${isBlocker?'<span class="blocker-label">BLOCKED</span>':''}
+          <span class="resp-act-status">${a.status}</span>
+          <span style="font:600 10px/1 var(--mono);color:var(--muted)">${a.pct}%</span>
+        </div>`;
+      }).join('');
+
+      delRows += `<div class="resp-del-row">
+        <div class="resp-del-name">
+          <span style="background:${delColor}20;color:${delColor};font:800 9px/1 var(--mono);padding:2px 6px;border-radius:3px">${letter}</span>
+          ${DELIVERABLES[letter]}
+        </div>
+        <div class="resp-acts">${actRows}</div>
+      </div>`;
+    });
+
+    const blockCount = isIDH ? ownerActs.filter(a=>a.status==='⏳').length : 0;
+    const blockNote = isIDH&&blockCount>0 ? `<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 14px;margin-bottom:14px;font:600 11px/1.4 var(--font);color:#991B1B">⚠️ ${blockCount} activities not started — these are on the critical path and will delay downstream RT work if not begun by W9.</div>` : '';
+
+    grid.innerHTML += `
+    <div class="resp-card">
+      <div class="resp-hdr resp-hdr-${owner.toLowerCase()}">
+        <div class="resp-hdr-left">
+          <div class="resp-hdr-icon">${owner}</div>
+          <div>
+            <div class="resp-hdr-name">${isIDH?'IDH':'Robotack (RT)'}</div>
+            <div class="resp-hdr-sub">${ownerActs.length} activities assigned</div>
+          </div>
+        </div>
+        <div class="resp-stats">
+          <div class="resp-stat"><div class="resp-stat-val" style="color:var(--green)">${done}</div><div class="resp-stat-lbl">Done</div></div>
+          <div class="resp-stat"><div class="resp-stat-val" style="color:var(--amber)">${prog}</div><div class="resp-stat-lbl">Active</div></div>
+          <div class="resp-stat"><div class="resp-stat-val" style="color:${isIDH&&pend>0?'var(--red)':'var(--grey)'}">${pend}</div><div class="resp-stat-lbl">${isIDH&&pend>0?'⚠ Blocked':'Pending'}</div></div>
+        </div>
+      </div>
+      <div class="resp-body">${blockNote}${delRows}</div>
+    </div>`;
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 4: WHERE WE STAND
+// ══════════════════════════════════════════════════════════════════════════════
+function buildStatus(){
+  const grid = document.getElementById('standGrid');
+
+  // ── Card 1 (top-left): Deliverable Progress ──────────────────────────────────
+  let delRows = '';
+  Object.keys(DELIVERABLES).forEach(letter=>{
+    const acts = ACTS.filter(a=>a.del===letter);
+    const avgPct = Math.round(acts.reduce((s,a)=>s+a.pct,0)/acts.length);
+    const done  = acts.filter(a=>a.status==='✔').length;
+    const prog  = acts.filter(a=>a.status==='►').length;
+    const pend  = acts.filter(a=>a.status==='⏳').length;
+    const col   = DEL_COLORS[letter];
+    delRows += `
+    <div class="del-progress-row">
+      <span class="del-letter-badge" style="background:${col}18;color:${col};font:800 10px/1 var(--mono);width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${letter}</span>
+      <span style="font:600 11px/1 var(--font);color:var(--charcoal);width:140px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${DELIVERABLES[letter]}</span>
+      <div style="flex:1;height:7px;background:#EEE;border-radius:4px;overflow:hidden;margin:0 8px">
+        <div style="height:100%;width:${avgPct}%;background:${col};border-radius:4px"></div>
+      </div>
+      <span style="font:700 11px/1 var(--mono);color:${col};width:34px;text-align:right;flex-shrink:0">${avgPct}%</span>
+      <span style="font:500 9px/1 var(--mono);color:var(--green);width:22px;text-align:right;flex-shrink:0">✔${done}</span>
+      <span style="font:500 9px/1 var(--mono);color:var(--amber);width:22px;text-align:right;flex-shrink:0">►${prog}</span>
+      <span style="font:500 9px/1 var(--mono);color:var(--grey);width:22px;text-align:right;flex-shrink:0">⏳${pend}</span>
+    </div>`;
+  });
+
+  // ── Card 2 (top-right): Risks & Blockers ─────────────────────────────────────
+  const risks = [
+    {icon:'🔴',title:'9 IDH activities not started',sub:'OTP gateway, payment APIs, test history APIs — critical path risk if not started by W9',level:'high'},
+    {icon:'🟡',title:'H1 Website design still at 0%',sub:'7 website frontend activities all depend on H1 — planned end 30-Jun',level:'med'},
+    {icon:'🟡',title:'F1 Campaigns design still at 0%',sub:'All 7 campaign activities blocked on this design — planned end 30-Jun',level:'med'},
+    {icon:'🟡',title:'QA phase starts Jul — tight window',sub:'16 QA activities compressed into final 6 weeks of sprint',level:'med'},
+    {icon:'🟢',title:'CMS (G) leading at 39% EV',sub:'Robotack ahead on CMS — 14 of 20 activities in progress',level:'low'},
+    {icon:'🟢',title:'Registration & Login recovering',sub:'3 completed, 9 in progress — design 80–98% done',level:'low'},
+  ];
+  const riskRows = risks.map(r=>`
+    <div class="risk-item">
+      <span class="risk-icon">${r.icon}</span>
+      <div class="risk-body">
+        <div class="risk-title">${r.title}</div>
+        <div class="risk-sub">${r.sub}</div>
+      </div>
+      <span class="risk-badge rb-${r.level}">${r.level.toUpperCase()}</span>
+    </div>`).join('');
+
+  // ── Card 3 (bottom-left): Delayed — p_end passed & not completed ─────────────
+  const DELAYED_DATA = [
+    {code:'A1',del:'A',owner:'RT',status:'►',pct:90,p_end:'31-May',desc:'UI/UX design for registration and login screens'},
+    {code:'A2',del:'A',owner:'RT',status:'►',pct:98,p_end:'31-May',desc:'UI/UX design for OTP countdown timer'},
+    {code:'A3',del:'A',owner:'RT',status:'►',pct:80,p_end:'31-May',desc:'UI/UX design for the lockout screen'},
+    {code:'B1',del:'B',owner:'RT',status:'►',pct:80,p_end:'31-May',desc:'UI/UX design for sub-account management screens'},
+    {code:'C1',del:'C',owner:'RT',status:'►',pct:80,p_end:'30-May',desc:'UI/UX design for test history screens'},
+    {code:'D1',del:'D',owner:'RT',status:'►',pct:60,p_end:'31-May',desc:'UI/UX design for payment flow and confirmation screens'},
+    {code:'E1',del:'E',owner:'RT',status:'►',pct:60,p_end:'31-May',desc:'UI/UX design for notification center and inbox'},
+    {code:'G1',del:'G',owner:'RT',status:'►',pct:70,p_end:'30-May',desc:'CMS portal UI/UX design (admin panel)'},
+    {code:'G2',del:'G',owner:'RT',status:'►',pct:80,p_end:'31-May',desc:'CMS data models (articles, banners, FAQs)'},
+    {code:'G3',del:'G',owner:'RT',status:'►',pct:50,p_end:'31-May',desc:'Content creation, edit, and publish APIs'},
+  ];
+
+  const delayedRows = DELAYED_DATA.map(a=>{
+    const col = DEL_COLORS[a.del];
+    return `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;background:#FFF5F5;border:1px solid #FECACA;margin-bottom:5px">
+      <span style="font:800 10px/1 var(--mono);color:var(--red);background:#FEE2E2;padding:2px 6px;border-radius:4px;flex-shrink:0;min-width:28px;text-align:center">${a.code}</span>
+      <span style="background:${col}18;color:${col};font:700 9px/1 var(--mono);padding:2px 5px;border-radius:3px;flex-shrink:0">${a.del}</span>
+      <span style="font:400 11px/1.3 var(--font);color:#991B1B;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.desc}">${a.desc}</span>
+      <span style="font:600 10px/1 var(--mono);color:var(--amber);flex-shrink:0">${a.pct}%</span>
+      <span style="font:700 9px/1 var(--mono);color:var(--red);background:#FEE2E2;padding:2px 6px;border-radius:4px;flex-shrink:0">Due: ${a.p_end}</span>
+      <span style="font:700 9px/1 var(--mono);padding:2px 6px;border-radius:8px;flex-shrink:0;background:var(--rt-bg);color:var(--rt);border:1px solid var(--rt-border)">${a.owner}</span>
+    </div>`;
+  }).join('');
+
+  // ── Card 4 (bottom-right): Must Finalize — p_end ≤ 30-Jun ────────────────────
+  const JUNE_IDH = [
+    {code:'A6', del:'A',status:'►',pct:60,  p_end:'21-Jun',desc:'OTP generation and SMS gateway integration'},
+    {code:'A7', del:'A',status:'⏳',pct:60,  p_end:'21-Jun',desc:'LMS integration — create Patient ID on registration'},
+    {code:'A8', del:'A',status:'⏳',pct:60,  p_end:'30-Jun',desc:'User registration API — validate Egyptian mobile format'},
+    {code:'B3', del:'B',status:'⏳',pct:60,  p_end:'30-Jun',desc:'API to add/edit/delete relatives linked to main account'},
+    {code:'C2', del:'C',status:'⏳',pct:60,  p_end:'30-Jun',desc:'API to fetch patient test history, results, and invoices'},
+    {code:'C3', del:'C',status:'⏳',pct:60,  p_end:'30-Jun',desc:'API to rename test names based on user input'},
+    {code:'D2', del:'D',status:'⏳',pct:60,  p_end:'30-Jun',desc:'Payment gateway integration (API keys, webhooks)'},
+    {code:'D3', del:'D',status:'⏳',pct:60,  p_end:'30-Jun',desc:'Order creation and payment initiation API'},
+  ];
+  const JUNE_RT = [
+    // Already overdue (May)
+    {code:'A1', del:'A',status:'►',pct:90, p_end:'31-May',desc:'UI/UX design — registration & login screens',overdue:true},
+    {code:'A2', del:'A',status:'►',pct:98, p_end:'31-May',desc:'UI/UX design — OTP countdown timer',overdue:true},
+    {code:'A3', del:'A',status:'►',pct:80, p_end:'31-May',desc:'UI/UX design — lockout screen',overdue:true},
+    {code:'B1', del:'B',status:'►',pct:80, p_end:'31-May',desc:'UI/UX design — sub-account management',overdue:true},
+    {code:'C1', del:'C',status:'►',pct:80, p_end:'30-May',desc:'UI/UX design — test history screens',overdue:true},
+    {code:'D1', del:'D',status:'►',pct:60, p_end:'31-May',desc:'UI/UX design — payment flow screens',overdue:true},
+    {code:'E1', del:'E',status:'►',pct:60, p_end:'31-May',desc:'UI/UX design — notification center',overdue:true},
+    {code:'G1', del:'G',status:'►',pct:70, p_end:'30-May',desc:'CMS portal UI/UX design (admin panel)',overdue:true},
+    {code:'G2', del:'G',status:'►',pct:80, p_end:'31-May',desc:'CMS data models (articles, banners, FAQs)',overdue:true},
+    {code:'G3', del:'G',status:'✔',pct:100, p_end:'31-May',desc:'Content creation, edit, and publish APIs',overdue:false},
+    // Due by end of June
+    {code:'A10',del:'A',status:'►',pct:10, p_end:'30-Jun',desc:'Login API with OTP verification flow',overdue:false},
+    {code:'A11',del:'A',status:'►',pct:10, p_end:'30-Jun',desc:'Implement registration screen with mobile number input',overdue:false},
+    {code:'A12',del:'A',status:'►',pct:20, p_end:'30-Jun',desc:'First-run age gate blocking users under 13',overdue:false},
+    {code:'A13',del:'A',status:'►',pct:30, p_end:'30-Jun',desc:'Arabic/English bilingual support for login screens',overdue:false},
+    {code:'A14',del:'A',status:'►',pct:8,  p_end:'30-Jun',desc:'Implement OTP entry screen and auto-verify logic',overdue:false},
+    {code:'C4', del:'C',status:'►',pct:60, p_end:'30-Jun',desc:'Filtering and pagination logic for test records',overdue:false},
+    {code:'E2', del:'E',status:'⏳',pct:0,  p_end:'30-Jun',desc:'Notification data model (type, status, timestamps)',overdue:false},
+    {code:'E3', del:'E',status:'►',pct:20, p_end:'30-Jun',desc:'Queue-based dispatch system',overdue:false},
+    {code:'F1', del:'F',status:'⏳',pct:0,  p_end:'30-Jun',desc:'UI/UX design for notification preferences screen',overdue:false},
+    {code:'G4', del:'G',status:'►',pct:20, p_end:'30-Jun',desc:'Media upload and asset management service',overdue:false},
+    {code:'G5', del:'G',status:'►',pct:50, p_end:'30-Jun',desc:'Smart deep link generation and management service',overdue:false},
+    {code:'G6', del:'G',status:'►',pct:50, p_end:'30-Jun',desc:'Confirmation page & configurable CTA management',overdue:false},
+    {code:'G7', del:'G',status:'►',pct:20, p_end:'30-Jun',desc:'Special campaign type configuration',overdue:false},
+    {code:'H1', del:'H',status:'⏳',pct:0,  p_end:'30-Jun',desc:'Website wireframes and responsive UI/UX design',overdue:false},
+    {code:'H2', del:'H',status:'⏳',pct:0,  p_end:'30-Jun',desc:'Website backend setup and API integration',overdue:false},
+    {code:'H3', del:'H',status:'✔',pct:100, p_end:'30-Jun',desc:'Authentication (login/register) web flow',overdue:false},
+    {code:'I1', del:'I',status:'►',pct:25,  p_end:'30-Jun',desc:'BRD Review & Analysis',overdue:false},
+  ];
+
+  function juneRow(a, owner){
+    const col = DEL_COLORS[a.del];
+    const ownerClass = owner==='IDH'?'owner-idh':'owner-rt';
+    const ownerStyle = owner==='IDH'
+      ? 'background:var(--idh-bg);color:var(--idh);border:1px solid var(--idh-border)'
+      : 'background:var(--rt-bg);color:var(--rt);border:1px solid var(--rt-border)';
+    const isOverdue = a.overdue;
+    const pctColor = a.pct===0?'#CBD5E1':a.pct>=70?'var(--amber)':'var(--green)';
+    const bg = isOverdue ? 'background:#FFF5F5;border-left:3px solid var(--red)' : 'background:#FAFAF9';
+    return `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;${bg};margin-bottom:4px;border:1px solid var(--border)">
+      <span style="font:800 10px/1 var(--mono);color:${col};background:${col}18;padding:2px 6px;border-radius:4px;flex-shrink:0;min-width:28px;text-align:center">${a.code}</span>
+      <span style="font:400 11px/1.3 var(--font);color:var(--charcoal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.desc}">${a.desc}</span>
+      <span style="font:600 10px/1 var(--mono);color:${pctColor};flex-shrink:0;width:30px;text-align:right">${a.pct}%</span>
+      <span style="font:700 9px/1 var(--mono);color:${isOverdue?'var(--red)':'var(--muted)'};flex-shrink:0;width:52px;text-align:right">${a.p_end}</span>
+    </div>`;
+  }
+
+  const juneContent = `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0 6px;border-bottom:2px solid var(--idh-border);margin-bottom:8px">
+      <span style="font:800 10px/1 var(--mono);color:var(--idh);text-transform:uppercase;letter-spacing:.06em">IDH — ${JUNE_IDH.length} activities</span>
+      <span style="font:600 9px/1 var(--mono);color:var(--amber);background:var(--amber-bg);padding:2px 7px;border-radius:10px;margin-left:auto">Some now In Progress</span>
+    </div>
+    ${JUNE_IDH.map(a=>juneRow(a,'IDH')).join('')}
+    <div style="display:flex;align-items:center;gap:8px;padding:12px 0 6px;border-bottom:2px solid var(--rt-border);margin-bottom:8px;margin-top:4px">
+      <span style="font:800 10px/1 var(--mono);color:var(--rt);text-transform:uppercase;letter-spacing:.06em">Robotack (RT) — ${JUNE_RT.length} activities</span>
+      <span style="font:600 9px/1 var(--mono);color:var(--amber);background:var(--amber-bg);padding:2px 7px;border-radius:10px;margin-left:auto">${JUNE_RT.filter(a=>a.overdue).length} already overdue</span>
+    </div>
+    ${JUNE_RT.map(a=>juneRow(a,'RT')).join('')}`;
+
+  grid.innerHTML = `
+  <div class="stand-card">
+    <div class="stand-title">📊 Deliverable Progress</div>
+    ${delRows}
+  </div>
+  <div class="stand-card">
+    <div class="stand-title">⚠️ Risks &amp; Blockers</div>
+    ${riskRows}
+  </div>
+  <div class="stand-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font:700 12px/1 var(--font);color:var(--charcoal)">⏰ Delayed Activities</span>
+      <span style="font:700 11px/1 var(--mono);color:var(--red);background:#FEE2E2;padding:3px 10px;border-radius:10px">${DELAYED_DATA.length} overdue</span>
+    </div>
+    <div style="font:400 10px/1.3 var(--font);color:var(--muted);margin-bottom:10px">Planned end date passed before <strong>18-Jun-2026</strong> · still not completed</div>
+    ${delayedRows}
+  </div>
+  <div class="stand-card" style="overflow-y:auto;max-height:580px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font:700 12px/1 var(--font);color:var(--charcoal)">📌 Must Finalize — June &amp; Before</span>
+      <span style="font:700 11px/1 var(--mono);color:var(--amber);background:var(--amber-bg);padding:3px 10px;border-radius:10px">${JUNE_IDH.length+JUNE_RT.length} activities</span>
+    </div>
+    <div style="font:400 10px/1.3 var(--font);color:var(--muted);margin-bottom:10px">Planned end ≤ 30-Jun-2026 · not completed · sorted by owner</div>
+    ${juneContent}
+  </div>`;
+}
+
+
+// ── SLICER STATE & LOGIC ─────────────────────────────────────────────────────
+const activeFilters = {month:'all', status:'all', owner:'all', del:'all', cat:'all'};
+
+function applyFilter(type, val, btn){
+  // Toggle: if already active, reset to 'all'
+  if(activeFilters[type]===val && val!=='all'){
+    activeFilters[type]='all';
+    // reset buttons in this group
+    document.querySelectorAll(`[data-filter="${type}"]`).forEach(b=>{
+      b.classList.remove('active');
+      if(b.dataset.val==='all') b.classList.add('active');
+    });
+  } else {
+    activeFilters[type]=val;
+    document.querySelectorAll(`[data-filter="${type}"]`).forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  applyAllFilters();
+}
+
+function resetFilters(){
+  Object.keys(activeFilters).forEach(k=>activeFilters[k]='all');
+  document.querySelectorAll('.slicer-btn').forEach(b=>{
+    b.classList.remove('active');
+    if(b.dataset.val==='all') b.classList.add('active');
+  });
+  applyAllFilters();
+}
+
+function applyAllFilters(){
+  let visible = 0;
+  // Filter each row in every month table
+  document.querySelectorAll('.act-table tbody tr').forEach(tr=>{
+    const code  = tr.querySelector('.code-badge')?.textContent||'';
+    const act   = ACTS.find(a=>a.code===code);
+    if(!act){tr.classList.remove('act-row-hidden');return;}
+
+    const mOk  = activeFilters.month==='all' || act.month===activeFilters.month;
+    const stOk = activeFilters.status==='all' || act.status===activeFilters.status;
+    const oOk  = activeFilters.owner==='all' ||
+                 (activeFilters.owner==='IDH_BLOCKED' ? (act.owner==='IDH'&&act.status==='⏳') : act.owner===activeFilters.owner);
+    const dOk  = activeFilters.del==='all' || act.del===activeFilters.del;
+    const cOk  = activeFilters.cat==='all' || act.cat===activeFilters.cat;
+
+    const show = mOk&&stOk&&oOk&&dOk&&cOk;
+    tr.classList.toggle('act-row-hidden',!show);
+    if(show) visible++;
+  });
+
+  // Show/hide month blocks based on whether they have visible rows
+  document.querySelectorAll('.month-block').forEach(block=>{
+    const hasVisible = block.querySelectorAll('tbody tr:not(.act-row-hidden)').length > 0;
+    block.classList.toggle('month-block-hidden', !hasVisible);
+    // update or add empty message
+    let emptyMsg = block.querySelector('.month-empty');
+    if(!hasVisible){
+      if(!emptyMsg){
+        emptyMsg = document.createElement('div');
+        emptyMsg.className='month-empty';
+        emptyMsg.textContent='No activities match the current filters.';
+        block.querySelector('.month-body').appendChild(emptyMsg);
+      }
+      emptyMsg.style.display='block';
+      block.classList.remove('month-block-hidden'); // keep block visible to show message
+    } else {
+      if(emptyMsg) emptyMsg.style.display='none';
+    }
+  });
+
+  document.getElementById('slicerCount').textContent = visible + ' / 119 activities';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    buildMonthly();
+    buildDependency();
+    buildResponsibility();
+    buildStatus();
+  });
+} else {
+  buildMonthly();
+  buildDependency();
+  buildResponsibility();
+  buildStatus();
+}
+
+</script>
+</body>
+</html>
